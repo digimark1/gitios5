@@ -1,0 +1,3565 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Smith Track'n Go App ios</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+     <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css" />
+     <link rel="stylesheet" href="css/loginstyle1.css" />
+     <link href='https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:400,300,200,700' rel='stylesheet' type='text/css'>
+    <style>
+				
+	</style>
+    <script type="text/javascript">
+		var myScroll;
+		var myScroll_message;
+		function loaded () {
+			localStorage.ready = 'no';
+			
+			//localStorage.second_trace = 'friend';
+		/*myScroll = new iScroll('bol_image', {
+				zoom: true,
+				bounce:false
+			});*/
+		}
+		//test-a-document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
+		document.addEventListener('DOMContentLoaded', loaded, false);
+</script>
+	 <script src="js/jquery-1.11.3.min.js"></script> 
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script> 
+    <script type="text/javascript" src="PushNotification.js"></script>
+    <!-- IScroll 5 -->
+    <!-- <script type="text/javascript" src="js/iscroll-zoom.js"></script> -->
+    <!-- IScroll 4 -->
+    <script type="text/javascript" src="js/new/iscroll.js"></script>
+    <script type="text/javascript" charset="utf-8">
+/*$(document).one('pagebeforecreate', function () {
+});*/
+    // Wait for device API libraries to load
+    //
+	var pushNotification;
+    document.addEventListener("deviceready", onDeviceReady, false);
+    // device APIs are available
+				function onDeviceReady() {
+					localStorage.sound = 0;
+					localStorage.ready = 'no';
+					localStorage.new_load = 0;
+					 navigator.splashscreen.hide();
+					 $.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;" />'});
+					 // base url for dashboard
+					 localStorage.base_url = 'http://leanstaffing.com/trackngo';
+					 // Url to save data into database
+					 localStorage.save_url = 'http://leanstaffing.com/testserver2';
+					 localStorage.files = 'http://leanstaffing.com/tkgo_files';
+					 
+					 localStorage.load_hid;
+					 localStorage.load_id_bol;
+					 localStorage.start;
+					 localStorage.finish;
+					 localStorage.user_id;
+					 localStorage.trace;
+					 localStorage.name;
+					 localStorage.message;
+					 localStorage.comment;
+					 localStorage.inactive;
+					 localStorage.camera;
+					 localStorage.pages;
+					 localStorage.cont_pages;
+					 localStorage.bol_number;
+					 localStorage.active_shipment;
+					 localStorage.save_bol;
+					 localStorage.load_number;
+					 localStorage.pick_address;
+					 //using, but testing the blank issue /// /// localStorage.token;
+					 //localStorage.test2;
+					 //localStorage.msg;
+					 //localStorage.bol;
+	
+					 screen.lockOrientation('portrait');
+					 console.log(navigator.camera);
+	
+					 navigator.geolocation.getCurrentPosition(onSuccess, onError, {timeout:13000});
+					 
+					 
+					 //Push Notification
+					 try 
+							{ 
+								pushNotification = window.plugins.pushNotification;
+										$("#app-status-ul").append('<li>Registering ' + device.platform + '</li>');
+								if (device.platform == 'android' || device.platform == 'Android' || device.platform == 'amazon-fireos' ) {} else {
+									pushNotification.register(tokenHandler, errorHandler, {"badge":"true","sound":"true","alert":"true","ecb":"onNotificationAPN"});	// required!
+								}
+							}
+							catch(err) 
+							{ 
+								txt="An error has ocurred .\n\n"; 
+								txt+="Error Description: " + err.message + "\n\n"; 
+								alert(txt); 
+							}
+					// CDV background location adjustment
+					
+					var bgGeo = window.plugins.backgroundGeoLocation;
+	
+					var callbackFn = function(location){
+					
+						};
+						 
+						var failureFn = function(error){
+							navigator.notification.alert(
+								  'Geolocation Error',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+							
+						};
+					
+					bgGeo.configure(callbackFn, failureFn, {
+						desiredAccuracy: 0,
+						stationaryRadius: 10,
+						distanceFilter: 10,
+						stopOnTerminate: true,
+						debug: false //changed to false to avoid notifications
+					});
+					// ENd of CDV background location adjustment
+					bgGeo.start();
+					// ---- Resume App --- //
+					
+					document.addEventListener("resume", onResume, false);
+					document.addEventListener("pause", onPause, false);
+				};
+		function onPause() {
+			setTimeout(function() {
+				//var map_interval;
+					//clearInterval(map_interval);
+				}, 0);
+         }
+		function onResume(){
+			 setTimeout(function() {
+					//alert('new_load ');
+					 var page = $(':mobile-pagecontainer').pagecontainer('getActivePage')[0].id;
+						if(page == 'page1_1'){
+							active_load2(localStorage.user_id);
+						};
+			 }, 0);
+		};
+    // onSuccess Geolocation
+    //
+    function onSuccess(position) {
+	//l-ocalStorage.trace = 1;
+	
+	//----End of background settings	
+	cordova.plugins.backgroundMode.setDefaults({
+		});
+		
+	cordova.plugins.backgroundMode.enable();
+	
+        var element = document.getElementById('geolocation');
+        element.innerHTML = '<input type="hidden" id="latitude" name="latitude" value="'           + position.coords.latitude              + '"  /><br />' +
+                            '<input type="hidden" id="longitude" name="longitude" value="'          + position.coords.longitude             + '" /><br />' ;
+	        // Variables for sound feature
+			 localStorage.sound = 0;
+			 //var audioElement = document.createElement('audio');
+			 var audioElement = new Media('css/beep.mp3');
+             //audioElement.setAttribute('src', 'css/beep.mp3');
+			 $('#sound_button').attr('src','css/sound_off.png');
+			 			 var interval;
+			 //move to device ready
+			    /* cordova.plugins.backgroundMode.onactivate = function () {
+							setTimeout(function () {
+								// Modify the currently displayed notification
+								audioElement.play({ playAudioWhenScreenIsLocked : true });
+							}, 2000);
+						};*/
+		$('#sound_button').click(function(){
+			//move the first 2 lines
+			
+			if(localStorage.sound == 0){
+				   interval = setInterval(function(){
+					  audioElement.play({ playAudioWhenScreenIsLocked : true });
+					  //alert('1');
+					},60000);
+					
+					$('#sound_button').attr('src','css/sound.png');
+					localStorage.sound = 1;
+				}else{
+					 audioElement.pause();
+					  //alert('1');
+					 $('#sound_button').attr('src','css/sound_off.png');
+			         clearInterval(interval);
+					 localStorage.sound = 0;
+					};
+			});  
+			//-----------------//-------//
+				if(!localStorage.user_id){
+					//localStorage.ready = 'yes';
+					location.href='#page1';
+					$.mobile.loading("hide");
+					$('#loading_start').hide();
+					//alert('device ready and needs the user');
+					}else{
+						//localStorage.ready = 'yes';
+						//alert('device ready for app use');
+						if(localStorage.location_mark == 1){
+						        localStorage.location_mark = 0;
+								if(localStorage.chat_phone_off == 1){
+									localStorage.chat_back = 1;
+									}else{
+										//alert('1');
+								 location.href='#page1_1';
+								}
+								$.mobile.loading("hide");
+							}else{
+								if(localStorage.chat_phone_off == 1){
+									localStorage.chat_back = 1;
+									}else{
+										//alert('2');
+								 location.href='#page1_1';
+								}
+								$.mobile.loading("hide");
+								};
+							if(localStorage.finish == 0){
+									  localStorage.tobecontinued = 1;
+									  //alert('localStorage.finish ==0');
+									  //localStorage.first_trace = 'device_ready';
+									  //alert('local finish 0');
+									  active_shipments_load(localStorage.last_active_load, localStorage.last_active_load_number);
+									  $.mobile.loading("hide");
+									  localStorage.chat_phone_off = 0;
+								}else{
+									if(localStorage.notification == 1){
+										//alert('local notification 1');
+										// active_shipments_load(localStorage.last_active_load, localStorage.last_active_load_number);
+										 $.mobile.loading("hide");
+										}else{
+											//alert('local notification 0');
+										  localStorage.tobecontinued = 0;
+										  if(localStorage.chat_phone_off == 1){
+											  localStorage.chat_back = 1;
+											  }else{
+												  //alert('4');
+											 location.href='#page1_1';
+											};
+										  $.mobile.loading("hide");
+										}
+										localStorage.notification = 0;
+										localStorage.chat_phone_off = 0;
+									};
+							
+						setTimeout(function(){
+							$.mobile.loading("hide");
+							 $('#loading_start').hide();
+							 $('#full_name').html(localStorage.name);
+							 $('#full_name1').html(localStorage.name);
+							 $('#full_name0_2').html(localStorage.name);
+							 $('#full_name0').html(localStorage.name);
+							//$('#full_name2').html(data[i].full_name);
+							 $('#full_name3').html(localStorage.name);
+							 $('#full_name4').html(localStorage.name);
+							 $('#full_name5').html(localStorage.name);
+							 $('#full_name6').html(localStorage.name);
+							//20151007
+							//active_load(localStorage.user_id);
+						},0);
+					}
+    }
+    // onError Callback receives a PositionError object
+    //
+    function onError(error) {
+		navigator.notification.alert(
+								  'Please Turn On your GPS and  ' + '\n' +
+              						'start the App Again '+'\n',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+    }
+//------------------------------- handle GCM notifications for Android -------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+				////////////////
+				////////
+				////////
+				 // handle GCM notifications for Android
+            function onNotification(e) {}
+			
+///////--------------------------------------
+///////--------------------------------------
+///////--------------------------------------		
+///////--------------------------------------NOTIFICATION IPHONE----------------------------------////////////
+///////--------------------------------------
+///////--------------------------------------
+///////--------------------------------------
+			
+			function onNotificationAPN(e) {
+                if (e.alert) {
+                     // showing an alert also requires the org.apache.cordova.dialogs plugin
+						//navigator.notification.alert(e.alert);
+					 $('#ios_notification').html(e.alert);
+							
+						//------ SENDING TO LOAD ON NOTIFICATION-----//
+						
+							var load_str = e.alert;
+							var load_sub = load_str.substring(0, 10);
+							
+							//----UPDATE LOAD ----//
+							var load_subup = load_str.substring(0, 17);
+							if(load_subup == "Changes in load #"){
+								localStorage.notification = 1;
+								localStorage.new_load = 1;
+								 var load_number = parseFloat(load_str.substring(17));
+								 $.ajax({
+									 type:'POST',
+									 dataType: 'json',
+									 async:false,
+									 url:''+localStorage.base_url+'/load/app_get_load_by_driver/'+localStorage.user_id,
+									 success: function(data){
+										  for(i=0;i<data.length;i++){
+											  if (data[i].load_number == load_number){
+												  localStorage.load_id_bol = data[i].idts_load;
+												  localStorage.load_number = data[i].load_number;
+												  $('#load_number_hid').html(data[i].load_number);
+												  };
+											  }
+											  
+											  function ChangeLoadCallback(){
+													 active_shipments_load(localStorage.load_id_bol,localStorage.load_number);
+													};
+														navigator.notification.alert(
+															  'Changes in load #'+localStorage.load_number,
+															  ChangeLoadCallback,
+															  'Smith TracknGo',
+															  'Ok');
+										 },
+									 error: function(data){},
+									 });
+								 update_shipments_load(localStorage.load_id_bol);
+								};
+							 //----END UPDATE-----//
+							
+							 //---- MESSAGE JOB # ---
+							 
+							if(load_sub == "Msg load #" ){
+								$("#image_source").attr('src','css/loading2.gif');
+								var load_sub_split = load_str.split("-");
+								var load_number = parseFloat(load_sub_split[0].substring(10));
+								
+								// alert(load_title_push);
+									 $.ajax({
+									 type: 'POST',
+									 dataType: 'json',
+									 async:false,
+									 url: ''+localStorage.base_url+'/load/app_get_load_by_driver/'+localStorage.user_id,
+										success: function(data){
+											console.log(data);
+											for(i=0;i<data.length;i++){
+												if (data[i].load_number == load_number){
+														localStorage.load_id_bol = data[i].idts_load;
+														$('#load_number_hid').html(data[i].load_number);
+														localStorage.load_number = data[i].load_number;
+														view_bol();
+														start_chat();
+													}
+												}
+										}
+										})
+								  setTimeout(function(){
+									location.href = "#page4";
+									localStorage.chat_phone_off = 1;
+									localStorage.bol_redirect = 1;
+							      },0) 
+								 
+								}; 
+							 
+							 //---- JOB #
+							if (load_sub == "New load #"){
+								var load_sub_split = load_str.split("-");
+								var load_number = parseFloat(load_sub_split[0].substring(10));
+								localStorage.notification = 1;
+								localStorage.new_load = 1;
+								//alert(load_push);
+									 $.ajax({
+									 type: 'POST',
+									 async: false,
+									 dataType: 'json',
+									 url: ''+localStorage.base_url+'/load/app_get_load_by_driver/'+localStorage.user_id,
+										success: function(data){
+											console.log(data);
+											for(i=0;i<data.length;i++){
+												if (data[i].load_number == load_number){
+														localStorage.load_id_bol = data[i].idts_load;
+														localStorage.last_active_load = localStorage.load_id_bol;
+														$('#load_number_hid').html(data[i].load_number);
+														localStorage.last_active_load_number = data[i].load_number;
+															//alert(data[i].idts_load+'-'+data[i].load_number);
+													};
+												};
+												function NewLoadCallback(){
+													 active_shipments_load(localStorage.load_id_bol,localStorage.last_active_load_number);
+													};
+														navigator.notification.alert(
+															  'You have a new load #'+localStorage.last_active_load_number,
+															  NewLoadCallback,
+															  'Smith TracknGo',
+															  'Ok');
+												     
+										},
+									 error: function(data){},
+										});
+								}
+					}
+                    
+                if (e.sound) {
+                    // playing a sound also requires the org.apache.cordova.media plugin
+                    var snd = new Media(e.sound);
+                    snd.play();
+					 //$('#ios_notification1').html('HELLO WORLD');
+                }
+                
+                if (e.badge) {
+                    pushNotification.setApplicationIconBadgeNumber(successHandler, event.badge);
+                }
+            }
+            
+            function tokenHandler (result) {
+				localStorage.token = result;
+				// Your iOS push server needs to know the token before it can push to this device
+				// here is where you might want to send it the token for later use.
+				//alert('device token = ' + localStorage.token);
+				$('#token_device_hid').html(result);
+				
+            }
+			
+            function successHandler (result) {
+            }
+            function errorHandler (error) {
+            }
+    </script>
+ 
+  </head>
+  <body>
+   <div data-role="page" id="page0">
+        <div id="changes_hidden" hidden></div>
+   		<div id="ios_notification" hidden></div>
+        <div id="cam_picture" hidden></div>
+   		<div id="token_device_hid" hidden></div>
+        <div data-role="header">
+                  <div style="background-color: rgb(255, 255, 255); padding-top: 5%;"></div>       	
+                    <table width="100%">
+                          <tr>
+                            <td width="45%"><div><img width="100%" src="css/logo.png" style="margin-top:0px; margin-bottom:0px"/></div></td>
+                            <td align="right" valign="top" style="padding:5px"><!--<div id="full_name6"></div><div><a href="#" id="signout6" style="color:red">Sign Out</a>--></td>
+                          </tr>
+                      </table>
+        </div>
+                        <div style="width:100%"><table width="100%"><tr><td width="50%"><img id="" src="css/active_active.png" width="100%"></td><td width=50%><img id="" src="css/history_inactive.png" width="100%"></td></tr></table></div>
+                    	<div role="listpage" class="ui-content" id="">
+                        <div id=""><!--<img src="css/loading.gif" style="width:20%;margin-left:40%;" />--></div>
+                     </div>
+             <!-- register id for push notifications -->
+               <div id="" hidden></div>
+    </div>
+    
+  <div data-role="page" id="page1">
+  	<div data-role="header">
+    <div style="background-color: rgb(255, 255, 255); padding-top: 5%;"></div>
+    	<table width="100%">
+          <tr>
+    		<td><div><img width="50%" src="css/logo.png" style="margin-top:0px; margin-bottom:0px"/></div></td>
+            <td align="right" valign="top"><div id=""></div><div><a href="#" id="" style="color:red"></a></div></td>
+    	  </tr>
+        </table>
+    </div>
+  	<div class="inputstyle">
+  		<div role="main" class="ui-content">
+        	<p id="geolocation">Finding geolocation...</p>
+                <div>
+                    <input type="tel" id="user_name" name="user_name" value="" placeholder="phone number" />
+                </div>
+                <div id="hid_uid" hidden></div>
+                <br />
+            	<div id="start_button"><a href="#" id="login_phone" name="login_phone" class="btn-class-send2">START</a></div>
+                <div id="loading_start"><!--<img src="css/loading.gif" style="width:8%;margin-left:45%;" />--></div>
+     	</div>
+     </div>
+   </div>
+  <div data-role="page" id="page1_1">
+  				<div data-role="header" data-position="fixed" data-tap-toggle="false"> 
+                <div style="background-color: rgb(255, 255, 255); padding-top: 5%;"></div>      	
+             	    	<div>
+                          <table width="100%">
+                              <tr>
+                                <td width="50%"><div><img width="100%" src="css/logo.png" style="margin-top:0px; margin-bottom:0px"/></div></td>
+                                <td align="right" valign="top" style="padding:5px"><div id="full_name0"></div><div><a href="#" id="signout0_5" style="color:red">Sign Out</a></div></td>
+                              </tr>
+                          </table>
+                         </div>
+                         <div id="header_container3">
+                            <div id="header_load_number3">&nbsp;</div>
+                        </div>
+                         <div style="width:100%; line-height:0.3"><table width="100%"><tr><td width="50%"><img id="active_ld" src="css/active_active.png" width="100%"></td><td width=50%><img id="history_ld" src="css/history_inactive.png" width="100%"></td></tr></table></div>
+                 </div>
+                    <div role="listpage" class="ui-content" id="lol">
+                        <table width="100%" id="lol_item"></table>
+                        <table id="lol_item_inactive"></table>
+                        <div id="loading_loads"><!--<img src="css/loading.gif" style="width:20%;margin-left:40%;" />--></div>
+                     </div>
+                     <div data-role="footer" data-position="fixed" style="background-color: rgba(0, 255, 255, 0);border-color: rgba(0, 255, 255, 0);"> 
+                       <table style="width: 100%; border-collapse:collapse">
+                            <tr style="">
+                                <td style="width: 25%;text-align: left;"><div><img id="sound_button" src="css/sound_off.png" style="width:50%;margin-left:0%;" /></div></td>
+                                <td style="width: 25%;"><div></div></td>
+								<td style="width: 25%;"><div></div></td>
+                                <td style="width: 25%;"><div></div></td>
+                            </tr>
+                       </table>
+                </div>
+             <!-- register id for push notifications -->
+               <div id="reg_id" hidden></div>
+
+    </div>
+    <script>
+/*			 var interval;
+			 //move to device ready
+		$('#sound_button').click(function(){
+			//move the first 2 lines
+			
+			if(localStorage.sound == 0){
+				   interval = setInterval(function(){
+					  audioElement.play();
+					  alert('1');
+					},2000);
+					
+					$('#sound_button').attr('src','css/sound.png');
+					localStorage.sound = 1;
+				}else{
+					 audioElement.pause();
+					  //alert('1');
+					 $('#sound_button').attr('src','css/sound_off.png');
+			         clearInterval(interval);
+					 localStorage.sound = 0;
+					};
+			});  */
+	</script>
+    <!-- List of SHIPMENTS -->
+    
+    <div data-role="page" id="page2">
+
+  				<div data-role="header" id="header2" data-position="fixed" data-tap-toggle="false"> 
+                <div style="background-color: rgb(255, 255, 255); padding-top: 5%;"></div>      	
+                         <div>
+                          <table width="100%">
+                              <tr>
+                                <td width="50%"><div><img width="100%" src="css/logo.png" style="margin-top:0px; margin-bottom:0px"/></div></td>
+                                <td align="right" valign="top" style="padding:5px"><div id="full_name"></div><div><a href="#" id="signout0" style="color:red">Sign Out</a></div></td>
+                              </tr>
+                          </table>
+                         </div>
+                      <div id="header_container2">
+                        <div id="header_load_number2">&nbsp;_</div>
+                     </div>
+                      <div style="width:100%; line-height:0.3"><table width="100%"><tr><td width="10%"><a href="#page1_1" id="" class=""><img width="100%" src="css/back_pic.png"></a></td><td width="30%"><img id="active_shp" src="css/active_shipments.png" width="100%"></td><td width=40%><!--<img id="history_shp" src="css/history_inactive.png" width="100%">--></td></tr></table></div>
+                 </div>
+                       
+                    	<div role="listpage" class="ui-content" id="lol_shipment">
+                        <table width="100%" id="lol_item_shipment"></table>
+                        <table id="lol_item_shipment_inactive"></table>
+                        <div id="loading_shipments"><!--<img src="css/loading.gif" style="width:20%;margin-left:40%;" />--></div>
+                     </div>
+               <div data-role="footer" data-position="fixed" style="display:none"> 
+                       <table style="width: 100%; border-collapse:collapse">
+                            <tr style="background-color:#ED1A3B">
+                                <td style="width: 25%;text-align: center;"><div><!--<a href="#page1_1" id="" class=""><img width="80%" src="css/back_pic.png"></a>--></div></td>
+                                <td style="width: 25%;"><div id="shipper_button0"><!--<a href="" id="sig_button11" name="a" class=""><img src="css/button2.png" width="100%"/></a>--></div></td>
+								<td style="width: 25%;"><div id="consignee_button0"><!--<a href="" id="sig_button22" name="b" class=""><img id="img_gps" src="css/button3.png" width="100%"/></a>--></div></td>
+                                <td style="width: 25%;"><div><a href="" id="" name="b" class="" onClick=""><!--<img src="css/button4.png" width="100%"/>--></a></div></td>
+                            </tr>
+                       </table>
+                </div>
+               
+    </div>
+
+<!---- LAST DESIGN BOL PAGE 2_5 ----->   
+ 	<div data-role="page" id="page2_5">
+             	    <div data-role="header" data-position="fixed" data-tap-toggle="false">
+                    <div style="background-color: rgb(255, 255, 255); padding-top: 5%;"></div>  
+                    <div>
+                        <table width="100%">
+                              <tr>
+                                <td width="50%"><div><img width="100%" src="css/logo.png" style="margin-top:0px; margin-bottom:0px"/></div></td>
+                                <td align="right" valign="top" style="padding:5px"><div id="full_name1"></div><div><a href="#" id="signout1" style="color:red">Sign Out</a></div></td>
+                              </tr>
+                          </table>
+                    </div>
+                    <div id="header_container">
+                        <div id="header_load">&nbsp;_</div><div id="header_load_number">&nbsp;_</div>
+                     </div>
+                     <div style="width:100%; line-height:0.3">
+                         <table width="100%"><tr><td width="12%"><a id="back_change" href="#page2" id="" class=""><img width="100%" src="css/back_pic.png"></a></td><td width="40%"><img id="original_id" src="css/original_link.png" width="100%"></td><td width=40%><img id="chat_bol" src="css/message_link.png" width="100%"></td></tr></table>
+                     </div>
+                 </div>
+                
+               <!-- <div id="bol_image">
+                    <img id="image_source" alt="" src="css/loading2.gif" style="width:100%;padding-top:2px;"/>
+                </div>-->
+                <div id="pick_drop">
+                <div id="map"></div>
+                  <!--<p>PickUp Location: <a style="color:red" href="maps://?q=cupertino"; onclick="window.open(this.href,'_system'); return false;">EverGreen Street 1600</a></p>-->
+                  <div id="pick_div">
+                     <div id="shipper_title">SHIPPER</div>
+                      <div id="pick_div_text">
+                         <p id="pick_margin_bottom"><span id="pick_location_title"><span id="company1">_</span></span></p><p id="pickup_margin_right"><span id="pickup_text">Address</span></p>
+                         <p>Pickup time: <span id="op_time_pk"></span></p>
+                         <!--<p><a style="color:blue; font-weight:500" onClick="location.href=localStorage.pick_address" target="_system">View in maps</a></p>-->
+                      </div>
+                      <div id="pick_div_im">
+                           <div id="shipper_table">
+                                <div id="shipper_take_picture" onClick="shipper_take_pic()"><img width="100%" src="css/for_pickup.png" /></div>
+                                <!--<div>Company:&nbsp;</div>-->
+                                <div><span id="reference1"></span></div>
+                                <div>Pickup #:&nbsp;<span id="pickup_number"></span></div>
+                                <!-- <div id="shipper_add_signature" onClick="shipper_add_sig()"><a href="#choose_signature_shipper" data-rel="popup" data-position-to="window"><img width="100%" src="css/add_signature.png" /></a></div> -->
+                               <!-- <div id="shipper_wrapper">
+                                	 <div id="expand_shipper"><b>&nbsp; - </b>Shipper BOL</div>
+                                	<div id="shipper_photos"></div> 
+                                 </div>-->
+                                 <!--<a href="#view_special_instructions" data-rel="popup" data-position-to="window" id="special_link2">Special Instructions</a>-->
+                           </div>
+                          <!--<a style="color:red" onClick="location.href=localStorage.pick_address" target="_system"><img id="pick_map_icon" src="css/maps-icon1.png"/></a> -->
+                      </div>
+                   </div>
+                   <table id="links1">
+                <tr>
+                <td><a style="color:blue; font-weight:500" onClick="location.href=localStorage.pick_address" target="_system">View in maps</a></td><td><a href="#view_special_instructions" data-rel="popup" data-position-to="window" id="special_link">Special Instructions</a></td></tr></table>
+                <div>ETA:<span id="eta_shipper">_</span></div>
+                
+                   <div id="drop_div">
+                   <div id="consignee_title">CONSIGNEE</div>
+                      <div id="drop_div_text">
+                          <p id="drop_margin_bottom"><span id="drop_location_title"><span id="company2">_</span></span></p><p id="drop_margin_right"><span id="drop_text">Address</span></p>
+                          <p>Delivery time: <span id="op_time_dp"></span></p>
+                          <!--<p><a style="color:blue; font-weight:500" onClick="location.href=localStorage.drop_address" target="_system">View in maps</a></p>-->
+                       </div>
+                       <div id="drop_div_text">
+                       <div id="consignee_table">
+                             <div id="consignee_take_picture" onClick="consignee_take_pic()"><img width="100%" src="css/for_delivery.png" /></div>
+                             <!--<div>Company:&nbsp;</div>-->
+                              <div><span id="reference2"></span></div>
+                               <div>Drop #:&nbsp;<span id="drop_number"></span></div>
+                             <!--<div id="consignee_add_signature" onClick="consignee_add_sig()"><a href="#choose_signature_consignee" data-rel="popup" data-position-to="window"><img width="100%" src="css/add_signature.png" /></a></div>-->
+                             <!--<div id="consignee_wrapper">
+                                 <div id="expand_consignee"><b>&nbsp; - </b>Consignee BOL</div>
+                                 <div id="consignee_photos"></div>
+                             </div>-->
+                             <!--<a href="#view_special_instructions" data-rel="popup" data-position-to="window" id="special_link">Special Instructions</a>-->
+                       </div>
+                          <!--<a style="color:red" onClick="location.href=localStorage.drop_address" target="_system"><img id="drop_map_icon" src="css/maps-icon2.png"/></a> -->
+                      </div>
+                    </div>
+                    <table id="links2">
+                <tr>
+                <td><a style="color:blue; font-weight:500" onClick="location.href=localStorage.drop_address" target="_system">View in maps</a></td><td><a href="#view_special_instructions2" data-rel="popup" data-position-to="window" id="special_link2">Special Instructions</a></td></tr></table>
+                    <div>ETA:<span id="eta_consignee">_</span></div>
+                </div>
+                
+                <div id="aditional_documents">
+                 <div id="documents_title">DOCUMENTS</div>
+                     <div id="document_options">
+                     	<div id="div_document_name">
+                            <!--<select data-native-menu="false" data-theme="a" data-overlay-theme="a" tabindex="-1">-->
+                            <select data-role="" id="select_new_document" data-native-menu="false" data-theme="a" data-overlay-theme="b">
+                            	<option data-placeholder="false" value="0">Select a Document</option>
+                                <option value="Bol">BOL</option>
+                                 <option value="Pod">POD</option>
+                                <option value="Invoice">Invoice</option>
+                                <option value="Manifest">Manifest</option>
+                                <option value="Lumper Fee">Lumper fee</option>
+                            </select>
+                        </div>
+                        <div id="div_document_picture">
+                           <div id="document_take_picture" onClick="document_take_pic()"><img width="100%" src="css/take_picture.png" /></div>
+                        </div>
+                        <div id="div_lol_item_documents">
+                           <table id="lol_item_documents">
+                        	<tr><th width="40%"> DATE </th><th width="60%">DOCUMENT NAME</th></tr>
+                           </table>
+                        </div>
+                     </div>
+                </div>
+                
+                <div id="screenheight" hidden></div>
+                <div id="screenheight2" hidden></div>
+                <div data-role="footer" data-position="fixed">
+                   <div id="load_id_hidden" hidden></div>
+                   <div id="load_number_hid" hidden></div>
+                   <div id="bol_number_hid" hidden></div>
+                </div>
+                
+                <!-- POP UP for special instructions SHIPPER-->
+                <div data-role="popup" data-overlay-theme="b" id="view_special_instructions" class="ui-content" data-theme="a">
+                    <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+                    <div id="special_title" style="font-weight:600;">Special Instructions :</div>
+                    <!--<div><a style="color:blue; font-weight:600; line-height:2" href=""></a></div>-->
+                    <div id="special_instructions_text"></div>
+                </div>
+                  <!-- POP UP for special instructions CONSIGNEE -->
+                <div data-role="popup" data-overlay-theme="b" id="view_special_instructions2" class="ui-content" data-theme="a">
+                    <a href="#" data-rel="back" class="ui-btn ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right">Close</a>
+                      <div id="special_title2" style="font-weight:600;">Special Instructions :</div>
+                      <!--<div><a style="color:blue; font-weight:600; line-height:2" href=""></a></div>-->
+                    <div id="special_instructions_text2"></div>
+                </div>
+       </div>
+<script>
+
+
+//----- Shipper mark ( Load has been picked up) -----//
+function shipper_take_pic(){ 
+					$.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;" />'});
+																 $.ajax({
+																	  type: 'POST',
+																	  async: true,
+																	  dataType:'json',
+																	  url: ''+localStorage.base_url+'/load/app_get_shipments_by_id/'+localStorage.shipment_id,
+																	  success: function(data){
+																		  if(data[0].origin_sign == 1){
+																			  //alert('test 1');
+																			  }else{
+																				  //alert('test 2');
+																				  // ------------Message to signature saving 
+																				$.ajax({
+																					type: 'POST',
+																					data: {load_id:localStorage.load_id_bol, sig_id: 1, bol_number:localStorage.bol_number, user_id: localStorage.user_id, lat_sig: $('#latitude').val(), lng_sig:$('#longitude').val()},
+																					url: ''+localStorage.save_url+'/message_pic_new.php',
+																					success: function(data){
+																						//alert('callcheck for pic 1');
+																						 $.ajax({
+																								  type: 'POST',
+																								  async: true,
+																								  data:{bol_number:localStorage.bol_number},
+																								  url: ''+localStorage.save_url+'/shipper_page_number_new.php',
+																								  success: function(data){
+																									  navigator.notification.alert(
+																																  'The truck is loaded.',
+																																  alertCallback,
+																																  'Smith TracknGo',
+																																  'Ok');
+																							    	 	$('#shipper_take_picture').html('<img width="100%" src="css/picked_up.png" />');
+																							     		$('#shipper_take_picture').attr('onClick','');
+																							     		$('#consignee_take_picture').html('<img width="100%" src="css/for_delivery_active.png" />');
+																										$('#consignee_take_picture').attr('onClick','consignee_take_pic()');
+																										$.mobile.loading("hide");
+																									  console.log(data);
+																									  },
+																								  error: function(data){
+																									  navigator.notification.alert(
+																																  'There was a problem, Try again',
+																																  alertCallback,
+																																  'Smith TracknGo',
+																																  'Ok');
+																										$.mobile.loading("hide");
+																									  console.log(data);
+																									  }
+																								  });
+														  //---------
+																						},
+																					error: function(data){
+																						//alert('error callcheck for pic 1');
+																						},
+																					})
+																			// -----------End of message to signature saving
+																				  }
+																		  //$.mobile.loading("hide");  
+																		  },
+																	  error: function(data){
+																		  //$.mobile.loading("hide");
+																		  }
+																 });
+														//----------------------------------------------------------------------------
+													  
+//--- END OF JUST TAKING PICTURE ----//
+
+	};
+
+//----- Consignee mark ( Load has been delivered) -----//
+function consignee_take_pic(){
+					$.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;"  />'});
+				  //---- POP UP SHIPPER -----/
+				  localStorage.consignee_counter = parseFloat(localStorage.consignee_counter) + 1;
+				   //----------CHECK if there is already a signature to not send the callcheck ------
+									 $.ajax({
+										  type: 'POST',
+										  async: true,
+										  dataType:'json',
+										  url: ''+localStorage.base_url+'/load/app_get_shipments_by_id/'+localStorage.shipment_id,
+										  success: function(data){
+											  if(data[0].destination_sign == 1){
+												   //alert('test 3');
+												  }else{
+													  //alert('test 4');
+													  // ------------Message to signature saving 
+													$.ajax({
+														type: 'POST',
+														data: {load_id:localStorage.load_id_bol, sig_id: 2, bol_number:localStorage.bol_number, user_id: localStorage.user_id, lat_sig: $('#latitude').val(), lng_sig:$('#longitude').val()},
+														url: ''+localStorage.save_url+'/message_pic_new.php',
+														success: function(data){
+															//alert('callcheck for pic 2');
+																$.ajax({
+																  type: 'POST',
+																  async: true,
+																  data:{bol_number:localStorage.bol_number},
+																  url: ''+localStorage.save_url+'/consignee_page_number_new.php',
+																  success: function(data){
+																	   navigator.notification.alert(
+																								  'The load has been delivered.',
+																								  alertCallback,
+																								  'Smith TracknGo',
+																								  'Ok');
+																  $('#consignee_take_picture').html('<img width="100%" src="css/delivered.png" />');
+																  $('#consignee_take_picture').attr('onClick','');
+																	$.mobile.loading("hide");
+																	//-------------------------
+																				   //----- ASK FOR DESTINATION EMPTY SIGNATURES-----//
+																				   var unsigned_shipments2 = 0;
+																							 $.ajax({
+																								 type: 'POST',
+																								 async:true,
+																								 dataType: 'json',
+																								 url:''+localStorage.base_url+'/load/app_get_shipments_by_load/'+localStorage.load_id_bol,
+																								 success: function(data){
+																										console.log(data);
+																										for(i=0;i<data.length;i++){
+																											if(data[i].destination_sign != 1){
+																												 unsigned_shipments2++;
+																												}else{
+																													}
+																											}
+																									},
+																								error: function(data){
+																									console.log(data);
+																									navigator.notification.alert(
+																																  'There was an error with active loads 12',
+																																  alertCallback,
+																																  'Smith TracknGo',
+																																  'Ok');
+																								}})						
+																							// Reset location traces sending //
+																							if(unsigned_shipments2 >= 1){
+																								//alert('unsigned_shipments >=1');
+																								}else{
+																										localStorage.start = 0;
+																										localStorage.finish = 1;
+																										// To enable the restart --- driver setinterval --- driver_location_interval
+																										localStorage.location_mark = 0;
+																										//-/-----/-//
+																										localStorage.trace = 0;//$('#localstorage_trace').html(0);
+																										clearInterval(location_trace_interval);
+																										cordova.plugins.backgroundMode.disable();
+																										//--ACHTUNG--//
+																										//bgGeo.stop();
+																									};
+																				
+																	  //-------------------------------
+																	
+																	  console.log(data);
+																	  },
+																  error: function(data){
+																	  navigator.notification.alert(
+																								  'There was a problem, Try again',
+																								  alertCallback,
+																								  'Smith TracknGo',
+																								  'Ok');
+																	  console.log(data);
+																	  }
+																  });
+					  //-------------------
+															},
+														error: function(data){
+															//alert('error callcheck for pic 2');
+															},
+														})
+												// -----------End of message to signature saving
+													  }
+											  //$.mobile.loading("hide");  
+											  },
+										  error: function(data){
+											  //$.mobile.loading("hide");
+											  }
+									 });
+					//----------------------------------------------------------------------------
+											// ----END OF WIN - FAIL ----- COnsignee save_picture.php --- //	
+	};
+// ----------------- DOCUMENT PICTURES --------------- //
+function save_additional_document(){
+	                      $.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;"  />'});
+						  $.ajax({
+									  type: 'POST',
+									  async: false,
+									  data:{load_id:localStorage.load_id_bol,bol_number:localStorage.bol_number,doc_name:$('#select_new_document').val(),url_name:localStorage.temp_document_name,id_shipment:localStorage.shipment_id},
+									  url: ''+localStorage.save_url+localStorage.save_document_pic+'',
+									  success: function(data){
+										   navigator.notification.alert(
+																	  'The document has been sent to the manager',
+																	  alertCallback,
+																	  'Smith TracknGo',
+																	  'Ok');
+																	  $.mobile.loading("hide");
+										  console.log(data);
+										  },
+									  error: function(data){
+										  navigator.notification.alert(
+																	  'There was a problem, Try again',
+																	  alertCallback,
+																	  'Smith TracknGo',
+																	  'Ok');
+																	  $.mobile.loading("hide");
+										  console.log(data);
+										  }
+									  });
+	};
+	
+//-----Adding consecutive to additional documents.----//
+function add_shipper_images(){
+	                    var imageURI = $('#cam_picture').html();
+						var options = new FileUploadOptions();
+						options.fileKey = "file";
+						options.fileName = ''+localStorage.load_id_bol+'_bol_'+localStorage.bol_number+'_sp-'+localStorage.shipper_counter+'.jpg';
+						options.mimeType = "image/jpeg";
+						options.params = {
+												firstname: 'first',
+												lastname: 'second',
+												workplace: 'workplace'
+											}
+						var ft = new FileTransfer();
+						ft.upload(imageURI, encodeURI(localStorage.save_url+"/save_picture.php"), win1, fail1, options);
+						
+						           function win1(r) {
+													  //alert('win1');
+													  $('#cam_picture').html('');
+													  //---- POP UP SHIPPER -----//
+													  //localStorage.save_shipper_bol = '/save_shipper_page.php';
+													  localStorage.shipper_counter = parseFloat(localStorage.shipper_counter) + 1;
+													  //----------CHECK if there is already a signature to not send the callcheck ------
+																 $.ajax({
+																	  type: 'POST',
+																	  async: true,
+																	  dataType:'json',
+																	  url: ''+localStorage.base_url+'/load/app_get_shipments_by_id/'+localStorage.shipment_id,
+																	  success: function(data){
+																		  if(data[0].origin_sign == 1){
+																			  }else{
+																				$.ajax({
+																					type: 'POST',
+																					data: {load_id:localStorage.load_id_bol, sig_id: 1, bol_number:localStorage.bol_number, user_id: localStorage.user_id, lat_sig: $('#latitude').val(), lng_sig:$('#longitude').val()},
+																					url: ''+localStorage.save_url+'/message_pic.php',
+																					success: function(data){},
+																					error: function(data){},
+																					});
+																				  }
+																		  },
+																	  error: function(data){}
+																 });
+														//----------------------------------------------------------------------------
+													   $.ajax({
+														  type: 'POST',
+														  async: true,
+														  data:{pages_shipper:localStorage.shipper_counter,load_id:localStorage.load_id_bol,bol_number:localStorage.bol_number,doc_name:'Shipper Document'},
+														  url: ''+localStorage.save_url+'/shipper_page_number_add.php',
+														  success: function(data){
+															 /* navigator.notification.alert(
+																						  'Additional picture has been sent to the manager',
+																						  alertCallback,
+																						  'Smith TracknGo',
+																						  'Ok');*/
+																localStorage.origin_sign = 1;
+															  console.log(data);
+															  },
+														  error: function(data){
+															  navigator.notification.alert(
+																						  'There was a problem, Try again',
+																						  alertCallback,
+																						  'Smith TracknGo',
+																						  'Ok');
+															  console.log(data);
+															  }
+														  });
+												}
+												
+												function fail1(error) {
+													alert("A1n error has occurred: Code = " + error.code);
+													console.log("upload error source " + error.source);
+													console.log("upload error target " + error.target);
+												}
+	};
+
+//---- -----//
+
+function document_take_pic(){
+	if($('#select_new_document').val()=='0'){
+	       navigator.notification.alert(
+									  'Please Select a document and try again',
+									  alertCallback,
+									  'Smith TracknGo',
+									  'Ok');
+	}else{
+		
+//--- JUST TAKING PICTURE ----//
+	navigator.camera.getPicture(onSuccess3, onFail3, { 
+								quality: 40,
+								targetWidth: 1650,
+								targetHeight: 2200,
+								destinationType: Camera.DestinationType.FILE_URI
+							});
+				function onSuccess3(imageURI) {
+					$.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;"  />'});
+					$('#cam_picture').html(imageURI);
+					add_shipper_images();
+					//--- SAVE PICTURE TAKEN -----//
+							var imageURI = $('#cam_picture').html();
+							var options = new FileUploadOptions();
+							options.fileKey = "file";
+							localStorage.temp_document_name = ''+localStorage.load_id_bol+'_bol_'+localStorage.bol_number+'_add_'+Math.floor((Math.random() * 100) + 1)+'.jpg';
+							options.fileName = localStorage.temp_document_name;
+							//($("#image_source").attr('alt')).substr(($('#image_source').attr('alt')).lastIndexOf("/")+1);
+							options.mimeType = "image/jpeg";
+							options.params = {
+												firstname: 'first',
+												lastname: 'second',
+												workplace: 'workplace'
+											}
+							var ft = new FileTransfer();
+							ft.upload(imageURI, encodeURI(localStorage.save_url+"/save_picture.php"), win3, fail3, options);
+                   //--- END OF - SAVE PICTURE TAKEN -----//
+				   					// ---- WIN - FAIL ----- COnsignee save_picture.php --- //
+											function win3(r) {
+												$.mobile.loading("hide");
+														   // Erase Picture when succeeding 
+														 $('#cam_picture').html('');
+														 var d = new Date();
+										                  $('#lol_item_documents').append('<tr><td>'+('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+(d.getDate())).slice(-2)+'/'+d.getFullYear()+'</td><td><a style="color:blue; font-weight:500" onClick="window.open('+localStorage.comma+''+localStorage.files+'/'+localStorage.temp_document_name+localStorage.comma+','+localStorage.comma+'_system'+localStorage.comma+')">'+$('#select_new_document').val()+'</a></td></tr>');
+														  localStorage.save_document_pic = '/save_document_page.php';
+														  save_additional_document();
+													}
+												
+											function fail3(error) {
+														alert("An error has occurred: Code = " + error.code);
+														console.log("upload error source " + error.source);
+														console.log("upload error target " + error.target);
+													}
+											// ----END OF WIN - FAIL ----- COnsignee save_picture.php --- //	
+				       }
+				function onFail3(message) {
+								// WHEN THE USER PRESS CANCEL --- not taking a photo.
+								
+					  }
+//--- END OF JUST TAKING PICTURE ----//
+	
+		
+		}
+	};
+
+$('#original_id').click(function(){
+	   if(parseFloat(localStorage.pages) == 0){
+		   navigator.notification.alert( 'Document not available for' + '\n' +
+              						     'this shipment',
+									     alertCallback,
+									     'Smith TracknGo',
+									     'Ok');
+		   }else{ 
+		 window.open(''+localStorage.files+'/'+localStorage.load_id_bol+'_bol_'+localStorage.bol_number+'.pdf', '_system');
+	   }
+	});
+	
+$('#div_document_name').click(function(){
+		$('#select_new_document-listbox-popup').css('width','90%');
+		$('#select_new_document-listbox-popup').css('max-width', '500px');
+	});
+</script>      
+       
+     <div data-role="page" id="page3">
+     
+			<div data-role="header">
+              <div style="background-color: rgb(255, 255, 255); padding-top: 3%;"></div>       	
+                <table width="100%">
+                      <tr>
+                        <td width="26%"><div><img width="100%" src="css/logo.png" style="margin-top:0px; margin-bottom:0px"/></div></td>
+                        <td align="right" valign="top" style="padding:5px"><div id="full_name3"></div><div><a href="#" id="signout3" style="color:red">Sign Out</a></div></td>
+                      </tr>
+                  </table>
+            </div>
+            <div id="signature_bg">
+                <div>
+                	<div style="display: inline-block; margin-bottom: 7px; margin-top:2px" id="header_signature_1"></div>
+                    <div style="display: inline-block;float: right;text-align: right;margin-top: 4px;"><a href="#" id="clear_sig1" class=""><img width="50%" src="css/signature-clear-action.png"></a></div>
+                </div>
+                <div id="content_s">
+                	<div id="page3_tr">
+                    <div id="page3_tr_bk">
+                        <div id="signatureparent">
+                            <div id="signature"></div>
+                        </div>
+                     </div>
+                    </div>
+                </div>
+                <div id="please_shipper">
+                	 PLEASE ENTER SHIPPER SIGNATURE
+                </div>
+                <div>
+                    <div id="signature_button">
+                        <table id="sig_table_1">
+                            <tr>
+                                <td width="33%" ><div><a href="#" id="back3" onClick="close_sig()" class=""><img width="40%" src="css/signature-back-action.png"></a></div></td>
+                                <td width="34%"><div class="width_buttons"><a href="#" id="save_signature" class=""><img width="80%" src="css/signature-save-action.png"></a></div></td>
+                                <td width="33%" ><div class="width_buttons"><a href="#" id="back3_1" onClick="close_sig()" class=""><img width="40%" src="css/signature-cancel-action.png"></a></div></td>
+                            </tr>
+                        </table>
+                     </div>
+                     <div id="loading_signature"><img src="css/loading.gif" style="width:8%;margin-left:45%;" /></div>
+                </div>
+              </div>
+      
+      </div>
+            <!----------- -------->
+            
+            <div hidden><input type="hidden" id="hidden_Signature" name="hidden_Signature" />
+            </div>
+            <div id="signature_print" hidden></div>
+    </div>
+    <div data-role="page" id="page5">
+    <div data-role="header" data-position="fixed" data-tap-toggle="false">
+              <div style="background-color: rgb(255, 255, 255); padding-top: 3%;"></div>       	
+                <table width="100%">
+                      <tr>
+                        <td width="24%"><div><img width="100%" src="css/logo.png" style="margin-top:0px; margin-bottom:0px"/></div></td>
+                        <td align="right" valign="top" style="padding:5px"><div id="full_name5"></div><div><a href="#" id="signout5" style="color:red">Sign Out</a></div></td>
+                      </tr>
+                  </table>
+            </div>
+
+            <div id="signature_bg2">
+            	<div style="padding-top: 4px;">
+                	<div style="display: inline-block; margin-bottom: 7px; margin-top:2px" id="header_signature_2"></div>
+                    <div style="display: inline-block;float: right;text-align: right;margin-top: 4px;"><a href="#" id="clear_sig2" class=""><img width="50%" src="css/signature-clear-action.png"></a></div>
+                </div>
+                    <div id="content_s2">
+                      <div id="page5_tr">
+                          <div id="page3_tr_bk">
+                            <div id="signatureparent2">
+                                <div id="signature2"></div>
+                            </div>
+                          </div>
+                       </div>
+                    </div>
+                    <div>
+                    <div id="please_consignee">
+                	   PLEASE ENTER CONSIGNEE SIGNATURE
+                    </div>
+                    <div id="signature_button2">
+                        <table id="sig_table_2">
+                            <tr>
+                                <td width="15%" ><div><a href="#" id="back4" onClick="close_sig2()" class=""><img width="40%" src="css/signature-back-action.png"></a></div></td>
+                                <td width="35%">
+                                  <select id="comment_bol">
+                                     <option value="1">OK</option>
+                                     <option value="2">SHORTAGE/DAMAGE</option>
+                                  </select>
+                                </td>
+                                <td width="17%"><div class="width_buttons"><a href="#" id="save_comment_action" onClick="" class=""><img width="77%" src="css/signature-comment-inactive.png"></a></div></td>
+                                <td width="17%"><div class="width_buttons"><a href="#" id="save_signature2" class=""><img width="79%" src="css/signature-save-action.png"></a></div></td>
+                                <td width="16%"><div class="width_buttons"><a href="#" id="back4_1" onClick="close_sig2()" class=""><img width="38%" src="css/signature-cancel-action.png"></a></div></td>
+                            </tr>
+                        </table>
+                     </div>
+                    <div id="loading_signature2"><img src="css/loading.gif" style="width:8%;margin-left:45%;" /></div>
+                 </div>
+             </div>
+            <div hidden><input type="hidden" id="hidden_Signature2" name="hidden_Signature2" />
+            </div>
+            <div id="signature_print2" hidden></div>
+    </div>
+    
+   <!--- page 7 SIGNATURE ON PIC ---->
+   <div data-role="page" id="page7">
+     
+			<div data-role="header">
+              <div style="background-color: rgb(255, 255, 255); padding-top: 3%;"></div>       	
+                <table width="100%">
+                      <tr>
+                        <td width="26%"><div><img width="100%" src="css/logo.png" style="margin-top:0px; margin-bottom:0px"/></div></td>
+                        <td align="right" valign="top" style="padding:5px"><div id="full_name7"></div><div><a href="#" id="signout7" style="color:red">Sign Out</a></div></td>
+                      </tr>
+                  </table>
+            </div>
+            <div id="signature_bg3">
+                <div>
+                	<div style="display: inline-block; margin-bottom: 7px; margin-top:2px" id="header_signature_3"></div>
+                    <div style="display: inline-block;float: right;text-align: right;margin-top: 4px;"><a href="#" id="clear_sig3" class=""><img width="50%" src="css/signature-clear-action.png"></a></div>
+                </div>
+                <div id="content_s3">
+                	<div id="page3_tr3">
+                    <div id="page3_tr_bk3">
+                        <div id="signatureparent3">
+                            <div id="signature3"></div>
+                        </div>
+                     </div>
+                    </div>
+                </div>
+                <div id="please_shipper3">
+                	 PLEASE ENTER SIGNATURE
+                </div>
+                <div>
+                    <div id="signature_button3">
+                        <table id="sig_table_3">
+                            <tr>
+                                <td width="33%" ><div><a href="#" id="back3_3" onClick="close_sig3()" class=""><img width="40%" src="css/signature-back-action.png"></a></div></td>
+                                <td width="34%"><div class="width_buttons"><a href="#" id="save_signature3" class=""><img width="80%" src="css/signature-save-action.png"></a></div></td>
+                                <td width="33%" ><div class="width_buttons"><a href="#" id="back3_13" onClick="close_sig3()" class=""><img width="40%" src="css/signature-cancel-action.png"></a></div></td>
+                            </tr>
+                        </table>
+                     </div>
+                     <div id="loading_signature3"><img src="css/loading.gif" style="width:8%;margin-left:45%;" /></div>
+                </div>
+              </div>
+                  <div hidden><input type="hidden" id="hidden_Signature3" name="hidden_Signature3" />
+            </div>
+            <div id="signature_print3" hidden></div>
+      </div>
+ <!------------------- END OF PICTURE SIGNATURE ----------->   
+<!-- Page 4 --> 
+    <div data-role="page" id="page4">
+                <div data-role="header" data-position="fixed" data-tap-toggle="false">
+                <div style="background-color: rgb(255, 255, 255); padding-top: 5%;"></div>
+                		<div>
+                        <table width="100%">
+                              <tr>
+                                <td width="50%"><div><img width="100%" src="css/logo.png" style="margin-top:0px; margin-bottom:0px"/></div></td>
+                                <td align="right" valign="top" style="padding:5px"><div id="full_name4"></div><div><a href="#" id="signout2" style="color:red">Sign Out</a></div></td>
+                              </tr>
+                          </table>
+                    </div>
+                    <div id="header_message">_</div>
+                    <div style="width:100%; line-height:0.3">
+                         <table width="100%"><tr><td width="12%"><a href="" id="backmessage" class=""><img width="100%" src="css/back_pic.png"></a></td><td width="40%"><img id="original_id2" src="css/original_link.png" width="100%"></td><td width=40%><img id="chat_bol2" src="css/message_link.png" width="100%"></td></tr></table>
+                     </div>
+                 </div>
+                   
+                    <div id="please_consignee">
+                	   SEND A CALL CHECK
+                    </div>
+  	<div id="message_body" class="inputstyle">
+  		<div role="main" class="ui-content" style="padding-top: 0px;padding-left:5px;padding-right:5px;padding-bottom:0px">
+        	<!--<p id="title_messages"><h1>Default Messages</h1></p>-->
+              <!--<h2 style="margin-top: 0px;">Default Messages</h2> -->
+                <div id="notification_message">
+                	<!--<div><p align="right" class="pdriver">Luis: Message</p></div>
+                    <div><p align="right" class="pdriver">Luis: MessageMessage MessageMessage MessageMess ageMessageMessageMessageMessag eMessageMessageMessageMessageMessageM essageMessageMess ageMessageMe ssageMessageMes sageMessageMessag eMessageMes sageMess ageMessageM essageMessageM essageMessage</p></div>
+                    <div><p align="left" class="pmanager">Luis: Message</p></div>
+                    <div><p align="left" class="pmanager">Luis: Message</p></div>
+                    <div><p align="left" class="pmanager">Luis: Message</p></div>
+                    <div><p align="right" class="pdriver">Luis: Message</p></div>
+                    <div><p align="right" class="pdriver">Luis: Message</p></div>-->
+                </div>
+                    <div id="choose_section">
+                             <div id="custom_div">
+                             	<div id="custom"><a href="#" id="select_custom" name="send_message" class="btn-class-send3" onClick="">CUSTOM</a></div>
+                                <div id="template"><a href="#" id="select_template" name="send_message" class="btn-class-clear3" onClick="">TEMPLATE</a></div>
+                             </div>
+                             <div id="troubles_div">
+                              <select data-role="" id="troubles_" data-native-menu="false" data-theme="a" data-overlay-theme="b">
+                                     <option data-placeholder="false" value="">Select Template Message</option>
+                                     <option value="1">Traffic Jam</option>
+                                     <option value="2">Flat Tire</option>
+                                     <option value="3">Damaged Vehicle</option>
+                                     <option value="4">Weather Problem</option>
+                                </select>
+                            </div>
+                     </div>
+                <div id="msg_hid">
+                	<textarea cols="30" rows="10" name="troubles_msg" id="troubles_msg" placeholder="message here" ></textarea>
+                </div>
+                <div id="load_hid" hidden></div>
+                <div id="load_hid2" hidden></div>
+                <div id="buttons_section">
+                    <div id="clear_section">
+                    	<div id="clear_message_button"><a href="#" id="clear_message" name="send_message" class="btn-class-clear" onClick="">CLEAR</a></div>
+                    </div>
+                    <div id="send_section">
+                        <div id="message_button"><a href="#" id="send_message" name="send_message" class="btn-class-send" onClick="sendfunction()">SEND</a></div>
+                        <div id="loading_message"><img src="css/loading.gif" style="width:15%;margin-left:40%; margin-top:3%" /></div>
+                    </div>
+                </div>
+     	</div>
+     </div>
+        <!--<div style="margin-left:10px"><a href="#page2_5" id="back_from_message" class="btn-class2" onClick="" >BACK</a></div>-->
+       <div data-role="footer" data-position="fixed" style="display:none"> 
+                       <table style="width: 100%; border-collapse:collapse">
+                            <tr style="background-color:#ED1A3B">
+                                <td style="width: 25%;text-align: center;"><div><!--<a href="" id="backmessage" class=""><img width="80%" src="css/back_pic.png"></a>--></div></td>
+                                <td style="width: 25%;"><div id="shipper_button1"><!--<a href="" id="sig_button11" name="a" class=""><img src="css/button2.png" width="100%"/></a>--></div></td>
+								<td style="width: 25%;"><div id="consignee_button1"><!--<a href="" id="sig_button22" name="b" class=""><img id="img_gps" src="css/button3.png" width="100%"/></a>--></div></td>
+                                <td style="width: 25%;"><div><!--<a href="" id="driver_message1" name="b" class="" onClick=""><img src="css/button4.png" width="100%"/></a>--></div></td>
+                            </tr>
+                       </table>
+                </div>
+        
+   </div>
+   <script>
+   $('#original_id2').click(function(){
+		window.open(''+localStorage.files+'/'+localStorage.load_id_bol+'_bol_'+localStorage.bol_number+'.pdf', '_system');
+	});
+	
+   </script>
+    <div data-role="page" id="page6">
+        <div data-role="header">
+                  <div style="background-color: rgb(255, 255, 255); padding-top: 3%;"></div>       	
+                    <table width="100%">
+                          <tr>
+                            <td width="24%"><div><img width="100%" src="css/logo.png" style="margin-top:0px; margin-bottom:0px"/></div></td>
+                            <td align="right" valign="top" style="padding:5px"><div id="full_name6"></div><div><a href="#" id="signout6" style="color:red">Sign Out</a></div></td>
+                          </tr>
+                      </table>
+        </div>
+        		<div>
+                	<div style="display: inline-block; margin-bottom: 7px; margin-top:2px" id="header_comment"></div>
+                    <div style="display: inline-block;float: right;text-align: right;margin-top: 4px;"><a href="#" id="clear_comment"  class=""><img width="50%" src="css/signature-clear-action.png"></a></div>
+                </div>
+        
+                <div id="comment_hand_parent">
+                	<div id="comment_hand"></div>
+                </div>
+                    <div id="please_comment">
+                	   PLEASE ENTER A COMMENT TO ADD TO THE BOL
+                    </div>
+                        <div id="comment_button"><!--<a href="#" id="save_comment" class="btn-class3">SAVE COMMENT</a>-->
+                                <table id="comment_table">
+                                    <tr>
+                                        <td width="15%" ><div><a href="#" id="back4" onClick="close_comment()" class=""><img width="40%" src="css/signature-back-action.png"></a></div></td>
+                                        <td width="35%">
+                                        <div id="disable_select">
+                                          <select id="comment_bol2">
+                                             <!--<option value="1">OK</option>-->
+                                             <option value="2">SHORTAGE/DAMAGE</option>
+                                          </select>
+                                         </div>
+                                        </td>
+                                        <td width="17%"><div class="width_buttons"><a href="#" id="save_comment" class=""><img width="77%" src="css/signature-comment-action.png"></a></div></td>
+                                        <td width="17%"><div class="width_buttons">&nbsp;<!--<a href="#" id="save_signature2" class=""><img width="80%" src="css/signature-save-action.png"></a>--></div></td>
+                                        <td width="16%"><div class="width_buttons"><a href="#" id="back4_1" onClick="close_comment()" class=""><img width="38%" src="css/signature-cancel-action.png"></a></div></td>
+                                    </tr>
+                                </table>
+                        </div>
+                        <div id="loading_comment_hand"><img src="css/loading.gif" style="width:6%;margin-left:45%;" /></div>
+                        <div id="comment_print" hidden></div>
+                        <div hidden><input type="hidden" id="hidden_comment" name="hidden_comment" /></div>
+            <div id="localstorage_trace" hidden></div>
+    </div>
+
+   <!-- BOL IMAGE PAGE -->
+	
+	<!---------------------------------- SCRIPTS ----------------- --------->
+    <script src="js/jSignature.min.noconflict.js"></script>
+		<script>
+		var location_trace_interval;
+		var chatInt;
+		var active_loads_number;
+		var driver_location_interval;
+		var active_shipment;
+		var map_interval;
+		//var theinterval;
+
+		function initMap1(lat0,lng0,lat1,lng1,lat2,lng2) {
+			//alert('initmap1 initiated');
+					  var bounds = new google.maps.LatLngBounds;
+					  var markersArray = [];
+					  var origin1 = {lat: lat0, lng: lng0};
+					  var destinationA = {lat: lat1, lng: lng1};
+					  var origin2 = {lat: lat0, lng: lng0};
+					  var destinationB = {lat: lat2, lng: lng2};
+					//alert('vars initiated');
+					  var destinationIcon = 'https://chart.googleapis.com/chart?' +
+						  'chst=d_map_pin_letter&chld=D|FF0000|000000';
+					  var originIcon = 'https://chart.googleapis.com/chart?' +
+      						'chst=d_map_pin_letter&chld=O|FFFF00|000000';
+					  var map = new google.maps.Map(document.getElementById('map'), {
+						//center: {lat: 55.53, lng: 9.4},
+						center: {lat: lat0, lng: lng0},
+						zoom: 7
+					  });
+					  //alert('after maps');
+					  var geocoder = new google.maps.Geocoder;
+					
+					  var service = new google.maps.DistanceMatrixService;
+					 // alert('after service');
+					  service.getDistanceMatrix({
+						origins: [origin1, origin2],
+						destinations: [destinationA, destinationB],
+						travelMode: google.maps.TravelMode.DRIVING,
+						unitSystem: google.maps.UnitSystem.IMPERIAL,
+						avoidHighways: false,
+						avoidTolls: false
+					  }, function(response, status) {
+						if (status !== google.maps.DistanceMatrixStatus.OK) {
+						  alert('Error was: ' + status);
+						} else {
+						  var originList = response.originAddresses;
+						  var destinationList = response.destinationAddresses;
+						  $('#eta_shipper').html('');
+						  $('#eta_consignee').html('');
+						  deleteMarkers(markersArray);
+						  
+						  var showGeocodedAddressOnMap = function(asDestination) {
+							var icon = asDestination ? destinationIcon : originIcon;
+							return function(results, status) {
+							  if (status === google.maps.GeocoderStatus.OK) {
+								map.fitBounds(bounds.extend(results[0].geometry.location));
+								markersArray.push(new google.maps.Marker({
+								  map: map,
+								  position: results[0].geometry.location,
+								  icon: icon
+								}));
+							  } else {
+								alert('Geocode was not successful due to: ' + status);
+							  }
+							};
+						  };
+					
+						  for (var i = 0; i < 1; i++) {
+							var results = response.rows[i].elements;
+							  geocoder.geocode({'address': originList[i]},
+								  showGeocodedAddressOnMap(false));
+							for (var j = 0; j < 1; j++) {
+							  geocoder.geocode({'address': destinationList[j]},
+								  showGeocodedAddressOnMap(true));
+								  if(((parseFloat(localStorage.pickup_lat_val) == 0)&&(parseFloat(localStorage.pickup_lng_val) == 0))){
+									$('#eta_shipper').html('Not Available')}else{
+											if(parseFloat(localStorage.origin_sign) == 1){
+												//alert('shipper Completed');
+												$('#eta_shipper').html("Completed");
+												}else{
+													//alert('shipper ETA');
+													 $('#eta_shipper').html(' '+results[j].duration.text +' (Dist: '+results[j].distance.text+')');
+													}	
+									}
+							}
+						  };
+						  //alert('after 1st geocode');
+						  
+						  for (var i = 1; i < 2; i++) {
+							var results = response.rows[i].elements;
+							  geocoder.geocode({'address': originList[i]},
+								  showGeocodedAddressOnMap(false));
+							for (var j = 1; j < 2; j++) {
+							  geocoder.geocode({'address': destinationList[j]},
+								  showGeocodedAddressOnMap(true));
+							if((parseFloat(localStorage.drop_lat_val) == 0)&&(parseFloat(localStorage.drop_lng_val) == 0)){
+								$('#eta_consignee').html('Not Available');}else{
+									if(parseFloat(localStorage.destination_sign) == 1){
+										//alert('consignee Completed');
+										   $('#eta_consignee').html("Completed");
+										}else{
+											//alert('Consignee ETA');
+							               $('#eta_consignee').html(' '+results[j].duration.text +' (Dist: '+results[j].distance.text+')');
+										}
+								}
+							}
+						  }
+						   //alert('after 2nd geocode');
+						}
+					  });
+					  //---Check for fields----
+					};
+					
+					function deleteMarkers(markersArray) {
+					  for (var i = 0; i < markersArray.length; i++) {
+						markersArray[i].setMap(null);
+					  }
+					  markersArray = [];
+					};
+		function start_chat(){
+			// ----- START CHAT when showing page ------//
+		$.ajax({
+							type: 'POST',
+							dataType: 'json',
+							async:false,
+							url: ''+localStorage.base_url+'/load/get_chat/'+parseFloat(localStorage.load_id_bol)+'/1',
+							success: function(data){
+								$("#notification_message").html("");
+								console.log(data);
+								for(i=0;i<data.length;i++){
+								if ((data[i].driver_sw == '0')&&(data[i].notify_driver =='1')){
+									$("#notification_message").append('<div><p align="left" class="pmanager">'+data[i].user_login+' : '+data[i].comment+'</p></div>');
+								} else if ((data[i].driver_sw == '1')) {
+									$("#notification_message").append('<div><p align="right" class="pdriver">'+data[i].driver_name+' : '+data[i].comment+'</p></div>');
+								}
+									
+								}
+								$('#notification_message').scrollTop($('#notification_message')[0].scrollHeight);
+								/*setTimeout(function () {
+											myScroll_message.refresh();
+										}, 500);*/
+							},
+							error: function(data){
+								console.log(data);
+							}});
+							
+		// ----- END OF ---- START CHAT when showing page ------//	
+			};
+				
+		
+		$('#signout0, #signout0_2, #signout0_5, #signout1, #signout2, #signout3, #signout5, #signout6, #signout7').click(function(){
+			 function onConfirm(button){
+			   if(button == 1){
+				   	clean_apple_id();
+				   }else{
+					   }
+			}
+			 navigator.notification.confirm(
+			 	'Are you sure?',
+				onConfirm,
+				'Smith TracknGo',
+				['Yes','No']
+			 );
+			});
+			
+		function signout_function(){
+			 function onConfirm(button){
+			   if(button == 1){
+				   	clean_apple_id();
+				   }else{
+					   }
+			}
+			 navigator.notification.confirm(
+			 	'Are you sure?',
+				onConfirm,
+				'Smith TracknGo',
+				['Yes','No']
+			 );
+			};
+			
+			
+		function alertCallback() {
+			 //Nothing but needed to make custom alerts work
+			}
+		// To clean APPLE Id from server and avoid future notifications
+		function clean_apple_id(){
+			                location.href ="#page0";
+							$.ajax({
+									type: 'POST',
+									//data: {token_device: token, driver_id: id},
+									data: {token_device: "", driver_id: localStorage.user_id},
+									url: ''+localStorage.save_url+'/saveid_apple.php',
+									success: function(data){
+										console.log(data);
+										localStorage.removeItem('load_hid');
+										localStorage.removeItem('start');
+										localStorage.removeItem('finish');
+										localStorage.removeItem('user_id');
+										localStorage.removeItem('trace');
+										localStorage.removeItem('name');
+										localStorage.removeItem('message');
+										localStorage.removeItem('comment');
+										localStorage.removeItem('inactive');
+										//clean everything
+										localStorage.clear();
+										//location.reload();
+										setTimeout(function(){location.href = "#page1";},0);
+										$('#user_name').val("")
+									},
+									error: function(){
+										 navigator.notification.alert(
+											  'An error has occurred, Please try again',
+											  alertCallback,
+											  'Smith TracknGo',
+											  'Ok');
+										window.history.back();
+										console.log(data);
+									},
+									timeout: 4000 // sets timeout to 3 seconds
+									})
+								};
+		
+		//NO shipper signature Added alert
+		function consignee_alert(){
+			  navigator.notification.alert(
+			  'Get the Shipper Signature First',
+			  alertCallback,
+			  'Smith TracknGo',
+			  'Ok');
+			}
+		
+		// GO TO HANDMADE COMMENT ========= CONSIGNEE
+		$('#comment_bol').on('change', function() {
+			 if($('#comment_bol').val() == 2){
+				 if(localStorage.comment == 0){
+				    location.href = "#page6";
+				  }else{
+					  navigator.notification.alert(
+						  'This can be done just once',
+						  alertCallback,
+						  'Smith TracknGo',
+						  'Ok');
+					  //$( "#comment_bol option:selected").val('1');
+					 }
+				 }
+			});
+			
+			 function onConfirm_picture(button){
+							   if(button == 1){
+										$("#image_source").attr('src','css/loading2.gif');
+														//selected photo URI is in the src attribute (we set this on getPhoto)
+										var imageURI = $('#cam_picture').html();
+										if (!imageURI) {
+											 navigator.notification.alert(
+														  'Please, take a picture first',
+														  alertCallback,
+														  'Smith TracknGo',
+														  'Ok');
+											return;
+										}
+								
+										//set upload options
+										var options = new FileUploadOptions();
+										options.fileKey = "file";
+										//options.fileName = imageURI.substr(imageURI.lastIndexOf('/')+1);
+										var name_date = ($("#image_source").attr('alt')).substr(($('#image_source').attr('alt')).lastIndexOf("/")+1);
+										var name_no_date = name_date.split("?"); // delete date in seconds from url
+										options.fileName = name_no_date[0]; //($("#image_source").attr('alt')).substr(($('#image_source').attr('alt')).lastIndexOf("/")+1);
+										options.mimeType = "image/jpeg";
+										options.params = {
+											firstname: 'first',
+											lastname: 'second',
+											workplace: 'workplace'
+										}
+								
+										var ft = new FileTransfer();
+										ft.upload(imageURI, encodeURI(localStorage.save_url+"/save_picture.php"), win, fail, options);
+				
+														 
+						   }else{
+								 $('#take_photo_button').show();
+								 $('#save_pic').hide();
+							   }
+				}
+			//--- Upload camera's Picture Function ---//
+			function uploadPhoto() {
+				  // Called if something bad happens.
+				  if($('#select-document').val() == '0'){
+					        navigator.notification.alert(
+								  'Please, Choose the document',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+					  }else{
+						  navigator.notification.confirm(
+								'Save this Document?',
+								onConfirm_picture,
+								'Smith TracknGo',
+								['Yes','No']
+							 );
+						  }
+							 
+    //
+					}
+											
+						function win(r) {
+								console.log("Code = " + r.responseCode);
+								console.log("Response = " + r.response);
+								//alert("Response =" + r.response);
+								console.log("Sent = " + r.bytesSent);
+								if($('#select-document').val()=='ss'){
+									  localStorage.signature = 0;
+									}else if(($('#select-document').val()=='cs')||($('#select-document').val()=='pd')){
+										localStorage.signature = 1;
+										}
+								  save_bol_function();
+										  d = new Date();
+								  $("#image_source").attr('src',$("#image_source").attr('alt')+d.getTime());
+								  // Erase Picture when succeeding 
+								  $('#cam_picture').html('');
+								  // Hide Save pic Button
+								  $('#save_pic').hide();
+							}
+						
+						function fail(error) {
+								alert("An error has occurred: Code = " + error.code);
+								console.log("upload error source " + error.source);
+								console.log("upload error target " + error.target);
+							}
+							
+			// Save picture, sends the image to the server.				
+			$('#save_picture').click(function(){
+				  uploadPhoto();
+				});
+			// Save bol, Creates Pdf and save it for manager.
+			//--- OnConfirm_signature changes function if the document is already signed. ---//
+			 function onConfirm_signature(){
+				var unsigned_shipments = 0;
+				$('#take_photo_button').show();
+				switch($('#select-document').val()){
+					case 'ss' :
+					   localStorage.doc_name = 'Shipper Signature';
+					break;
+					case 'cs' :
+						localStorage.doc_name = 'Consignee Signature';
+					break;
+					case 'pd' :
+						localStorage.doc_name = 'Proof of Delivery';
+					break;
+					}
+							$.ajax({
+									  type: 'POST',
+									  async: false,
+									  data:{pages_number:localStorage.pages,load_id:localStorage.load_id_bol,bol_number:localStorage.bol_number,doc_name:localStorage.doc_name},
+									  url: ''+localStorage.save_url+localStorage.save_bol+'',
+									  success: function(data){
+										   if(localStorage.signature == 0) {
+													  localStorage.signature = 1;
+												} else if(localStorage.signature == 1){
+													  localStorage.completed = 1;
+													  //$('#save_bol').hide();
+													   $('#consignee_button').html('<a href="#" id="sig_button2" name="b" class=""><img id="img_gps" src="css/button3s.png" width="100%"/></a>');
+													   //----- ASK FOR DESTINATION EMPTY SIGNATURES-----//
+																  $.ajax({
+																	 type: 'POST',
+																	 async:false,
+																	 dataType: 'json',
+																	 url:''+localStorage.base_url+'/load/app_get_shipments_by_load/'+localStorage.load_id_bol,
+																	 success: function(data){
+																			console.log(data);
+																			for(i=0;i<data.length;i++){
+																				if(data[i].destination_sign == 0){
+																					 unsigned_shipments++;
+																					}else{
+																						}
+																				}
+																		},
+																	error: function(data){
+																		console.log(data);
+																		navigator.notification.alert(
+																									  'There was an error with active loads 2',
+																									  alertCallback,
+																									  'Smith TracknGo',
+																									  'Ok');
+																	}})						
+																// Reset location traces sending //
+																if(unsigned_shipments >= 1){
+																	//alert('unsigned_shipments >=1');
+																	         $('#select_document_div').hide();
+									                                         $('#take_photo_button').hide();
+																	}else{
+																		     //$('#select_document_div').html('<select name="select-document" id="select-document" data-native-menu="false"><option value="0">Document</option><option value="ss" disabled>Shipper Signature</option><option value="cs">Consignee Signature</option><option value="pd">Proof of Delivery</option></select>');
+																		     $('#select_document_div').hide();
+																			 $('#take_photo_button').hide();
+																			 /*
+																			 $("#select-document option[value='cs']").attr("disabled", "disabled");
+																			 $("#select-document option[value='pd']").attr("disabled", "disabled");*/
+																			localStorage.start = 0;
+																			localStorage.finish = 1;
+																			// To enable the restart --- driver setinterval --- driver_location_interval
+																			localStorage.location_mark = 0;
+																			//-/-----/-//
+																			localStorage.trace = 0;//$('#localstorage_trace').html(0);
+																			clearInterval(location_trace_interval);
+																			cordova.plugins.backgroundMode.disable();
+																			//--ACHTUNG--//bgGeo.stop();
+																			//alert('unsigned_shipments=0');
+																		};
+													}
+										   navigator.notification.alert(
+																	  'The Document has been sent to Manager',
+																	  alertCallback,
+																	  'Smith TracknGo',
+																	  'Ok');
+										  console.log(data);
+										  },
+									  error: function(data){
+										  navigator.notification.alert(
+																	  'There was a problem, Try again',
+																	  alertCallback,
+																	  'Smith TracknGo',
+																	  'Ok');
+										  console.log(data);
+										  }
+									  });
+								};
+								
+			// Save BOL as a "signature"///
+			function save_bol_function(){
+				       //
+				if(localStorage.signature == 0){
+								 localStorage.save_bol = '/savebol.php';
+								 onConfirm_signature();
+				}else if(localStorage.signature == 1){
+								 localStorage.save_bol = '/savebol2.php';
+								 onConfirm_signature();
+						}
+				};
+			
+			//---BOL using CAMERA ---//
+			$('#upload_picture').click(function(){
+				localStorage.image_name = $("#image_source").attr('src');
+				$("#image_source").attr('alt',localStorage.image_name);
+				$("#image_source").attr('src','css/loading2.gif');
+				navigator.camera.getPicture(onSuccess, onFail, { quality: 40,
+								targetWidth: 1650,
+								targetHeight: 2200,
+								destinationType: Camera.DestinationType.FILE_URI
+							});
+							
+							function onSuccess(imageURI) {
+								$('#take_photo_button').hide();
+								$('#save_pic').show();
+								$('#cam_picture').html(imageURI);
+								setTimeout(function(){
+									   $('#image_source').attr('src',$('#cam_picture').html());
+									   setTimeout(function () {
+											myScroll.refresh();
+										}, 100);
+									},0);
+								
+								 
+							}
+							
+							function onFail(message) {
+								//alert('Failed because: ' + message);
+								// WHEN THE USER PRESS CANCEL --- not taking a photo.
+								$("#image_source").attr('src',localStorage.image_name);
+							}
+			});
+		// SHOW ACTIVE AND HISTORY LOADS
+        $('#active_ld').click(function(){
+				$('#active_ld').attr('src','css/active_active.png');
+				$('#history_ld').attr('src','css/history_inactive.png');
+				$('#lol_item').show();
+				$('#lol_item_inactive').hide();
+			});
+		
+		
+        $('#history_ld').click(function(){
+			    $('#active_ld').attr('src','css/active_inactive.png');
+				$('#history_ld').attr('src','css/history_active.png');
+				$('#lol_item').hide();
+				$('#lol_item_inactive').show();
+			});
+		
+		$('#digital_bol').click(function(){
+			    //$('#chat_bol').attr('src','css/chat_inactive.png');
+			    $('#digital_bol').attr('src','css/digital_active.png');
+				$('#direction_bol').attr('src','css/places_inactive.png');
+				$('#picture_bol').attr('src','css/picture_inactive.png');
+				$('#picture_buttons').hide();
+				$('#pick_drop').hide();
+				$('#digital_buttons').show();
+				//$('#bol_image').show();
+				// expandable menu
+				//-------
+			});
+		$('#picture_bol').click(function(){
+			    //$('#chat_bol').attr('src','css/chat_inactive.png');
+			    $('#digital_bol').attr('src','css/digital_inactive.png');
+				$('#direction_bol').attr('src','css/places_inactive.png');
+				$('#picture_bol').attr('src','css/picture_active.png');
+				$('#picture_buttons').show();
+				$('#pick_drop').hide();
+				$('#digital_buttons').hide();
+				//$('#bol_image').show();
+			});	
+		$('#direction_bol').click(function(){
+			    //$('#chat_bol').attr('src','css/chat_inactive.png');
+			    $('#digital_bol').attr('src','css/digital_inactive.png');
+				$('#direction_bol').attr('src','css/places_active.png');
+				$('#picture_bol').attr('src','css/picture_inactive.png');
+				//$('#picture_buttons').hide();
+				$('#pick_drop').show();
+				//$('#digital_buttons').hide();
+				//$('#bol_image').hide();
+			});
+		 $('#chat_bol, #chat_bol2').click(function(){
+			    //$('#chat_bol').attr('src','css/chat_active.png');
+				setTimeout(function(){
+						location.href='#page4';
+					},100);
+				$('#direction_bol').attr('src','css/places_inactive.png');
+				$('#picture_bol').attr('src','css/picture_inactive.png');
+				$('#digital_bol').attr('src','css/digital_inactive.png');
+			});		
+		  						
+		//------  VIEW BOL IMAGE ------//
+		
+		function view_bol(){
+			 //$('#localstorage_trace').html(localStorage.trace);
+				                //location.href='#page2_5';
+								/*var bolh1 = (0.51)*parseFloat(window.screen.height);
+								$('#bol_image').css("height",bolh1);
+								setTimeout(function (){
+									//alert('inside view bol')
+										d = new Date();
+										if(localStorage.inactive == 1){
+											    $("#image_source").attr('src',''+localStorage.files+'/'+$('#load_hid').html()+'_bol_'+localStorage.bol_number+'-0.jpg?'+d.getTime()+'');
+											}else{
+										        $("#image_source").attr('src',''+localStorage.files+'/'+localStorage.load_id_bol+'_bol_'+localStorage.bol_number+'-0.jpg?'+d.getTime()+'');
+											}
+										//$('#bol_image').append('<div><img id="image_source2" src="css/loading2.gif" style="width:100%;padding-top:2px;"/></div>');
+									 }, 100);
+									 
+								setTimeout(function () {
+											myScroll.refresh();
+									}, 500);*/
+					}
+		///-------- TRACE LOAD - Onpage2 ----///
+		function trace_load(){
+			//
+			localStorage.trace_load = 1;
+			setTimeout(function(){
+					if(parseFloat(localStorage.active_shipment_counter) >= 1){
+							 localStorage.trace = 1;//$('#localstorage_trace').html(1);
+							// alert('shipment counter>=1');
+					}else{
+							 localStorage.trace = 0; //$('#localstorage_trace').html(0);
+							 // alert('shipment counter = 0');
+						}
+				},100); 
+			
+			   				//----- SEND TRACING LOCATION WHEN THE SHIPMENTS ARE DISPLAYED----///
+				if(localStorage.finish == 1){
+					//alert('localstorage finish = 1')
+					}else{
+/*Ask if already started sening trace */if(localStorage.start == 1){
+												//alert('localstorage start = 1')
+													}else{
+														localStorage.load_id_trace = localStorage.load_id_bol;
+														location_trace_interval = setInterval(function(){
+															if(localStorage.trace == 1){
+															navigator.geolocation.getCurrentPosition(onSuccess, onError);
+																  function onSuccess(position) {
+																	 var x = position.coords.latitude;
+																	 var y = position.coords.longitude;
+																		send_trace(x,y);
+																  };
+																   function onError(error) {
+																	    navigator.notification.alert(
+																			  'GPS trace system is inactive',
+																			  alertCallback,
+																			  'Smith TracknGo',
+																			  'Ok');
+																	};
+															}else{
+																//alert('Im not sending the trace');
+																}
+													//WARNING
+														 },300000);
+													}
+											}		
+					};
+		function trace_load2(){
+			localStorage.trace_load2 = 1;
+						localStorage.load_id_trace = localStorage.load_id_bol;
+						location_trace_interval = setInterval(function(){
+						//if(localStorage.trace == 1){
+						navigator.geolocation.getCurrentPosition(onSuccess, onError);
+							  function onSuccess(position) {
+								 var x = position.coords.latitude;
+								 var y = position.coords.longitude;
+									send_trace(x,y);
+							  };
+							   function onError(error) {
+									navigator.notification.alert(
+										  'GPS trace system is inactive',
+										  alertCallback,
+										  'Smith TracknGo',
+										  'Ok');
+								};
+						//}else{
+							  //alert('Im not sending the trace2');
+						//	}
+				       //WARNING
+					 },300000);
+			}
+		///----------------------------------///
+		<!-- MESSAGE TO DASHBOARD OPTIONS -->
+		
+	
+	$('#troubles_').on('change', function() {
+				switch($('#troubles_').val()){
+					case '1' :
+					  $("#troubles_msg").val('Traffic Jam');
+					break;
+					case '2' :
+						$("#troubles_msg").val('Flat Tire');
+					break;
+					case '3' :
+						$("#troubles_msg").val('Damaged Vehicle');
+					break;
+					case '4' :
+						$("#troubles_msg").val('Weather Problem');
+					break;
+					}
+	});
+
+				
+				
+		$('#select_custom, #troubles_msg').click(function(){
+				$('#select_custom').attr('class','btn-class-send');
+				$('#select_template').attr('class','btn-class-clear');
+				$('#choose_section').css('background-color','#5F5F5F');
+				localStorage.message = 1;
+			});
+		$('#select_template, #troubles_').click(function(){
+				$('#select_custom').attr('class','btn-class-clear');
+				$('#select_template').attr('class','btn-class-send');
+				$('#choose_section').css('background-color','#ED1A3B');
+				localStorage.message = 0;
+			});
+		<!-- SEND MESSAGE TO WEB -->
+		
+		function sendfunction(){
+
+			var custom;
+			if (localStorage.message == 0 ){
+				 if($('#troubles_').val() == ""){
+					  navigator.notification.alert(
+						  'Please Choose an Option',
+						  alertCallback,
+						  'Smith TracknGo',
+						  'Ok');
+				 }else{
+					$('#message_button').hide();
+					$('#loading_message').show();
+					    $.ajax({ 
+                            type: 'POST',
+                            data: {load_id: localStorage.load_id_bol, message_id: $('#troubles_').val(), user_id : localStorage.user_id, message_text: $("textarea#troubles_msg").val(), lat_message: $('#latitude').val(), lng_message:$('#longitude').val(), bol_number:localStorage.bol_number},
+                            url: ''+localStorage.save_url+'/sendmessage.php',
+                            success: function(data){
+                                console.log(data);
+							    navigator.notification.alert(
+								  'Your message Has been sent to the Manager',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+								$('#message_button').show();
+								$('#loading_message').hide();
+								
+								//Add message instant
+								var name = (localStorage.name).split(" ");
+								$("#notification_message").append('<div><p align="right" class="pdriver">'+name[0]+' : '+$("textarea#troubles_msg").val()+'</p></div>');
+								$('#notification_message').scrollTop($('#notification_message')[0].scrollHeight);
+								$("textarea#troubles_msg").val("");
+                            },
+                            error: function(){
+                                console.log(data);
+								 navigator.notification.alert(
+								  'There was an error sending your message',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+                            }})
+					 }
+				}
+				
+			//custom 
+			if(localStorage.message == 1){
+						if($("textarea#troubles_msg").val()==""){
+							navigator.notification.alert(
+								  'Please type a message',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+							
+						}else{
+					       $('#message_button').hide();
+					       $('#loading_message').show();
+							custom=5;  
+					$.ajax({ 
+                            type: 'POST',
+                            data: {load_id:localStorage.load_id_bol, message_id: custom, user_id : localStorage.user_id, message_text: $("textarea#troubles_msg").val(), lat_message: $('#latitude').val(), lng_message:$('#longitude').val()},
+                            url: ''+localStorage.save_url+'/sendmessage.php',
+                            success: function(data){
+                                console.log(data);
+								navigator.notification.alert(
+								  'Your message Has been sent to the Manager',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+								$('#message_button').show();
+								$('#loading_message').hide();
+								//Add message instant
+								var name = (localStorage.name).split(" ");
+								$("#notification_message").append('<div><p align="right" class="pdriver">'+name[0]+' : '+$("textarea#troubles_msg").val()+'</p></div>');
+								$('#notification_message').scrollTop($('#notification_message')[0].scrollHeight);
+								$("textarea#troubles_msg").val("");
+                            },
+                            error: function(){
+                                console.log(data);
+								navigator.notification.alert(
+								  'There was an error sending your message',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+                            }})
+							 }
+			}
+		}
+		
+		//-------------- Send Location to DATABASE ------------------------
+		function send_location(x,y){ 
+                    var lati = x;
+					$('#latitude').val(lati); // Use to show location when sending callcheck
+                    var longi = y;
+					$('#longitude').val(longi); // Use to show location when sending callcheck
+					var name = localStorage.user_id;
+					
+                        $.ajax({
+                            type: 'POST',
+							data: {user_lat: lati, user_long: longi, user_name: name},
+                            url: ''+localStorage.save_url+'/save.php',
+                            success: function(data){
+                                console.log(data);
+                               // alert('Your location was successfully added');
+							   bgGeo.finish();
+                            },
+                            error: function(){
+                                console.log(data);
+								navigator.notification.alert(
+								  'There was an error sending to database',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+                            }})
+		}
+		
+		function send_trace(x,y){
+			
+					var lati = x;
+					$('#latitude').val(lati); // Use to show location when sending callcheck
+                    var longi = y;
+					$('#longitude').val(longi); // Use to show location when sending callcheck
+					var name = localStorage.user_id;
+					//localStorage.load_id_trace = localStorage.load_id_bol;
+                        $.ajax({
+                            type: 'POST',
+							data: {user_lat: lati, user_long: longi, load_id:localStorage.load_id_trace},
+                            url: ''+localStorage.save_url+'/save_trace.php',
+                            success: function(data){
+                                console.log(data);
+                               // alert('Your location was successfully added');
+							   bgGeo.finish();
+                            },
+                            error: function(){
+                                console.log(data);
+								navigator.notification.alert(
+								  'There was an error sending to database',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+                            }})
+		}
+			
+		//---------------------------End ------------------
+		function active_load(id_driver){
+			                  $.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;" />'});
+			                  var active_shipment;// Active shipments counter variable. //
+							  var shipment_number; // Number of shipments, active or inactive.
+							 $.ajax({
+							 type: 'POST',
+							 dataType: 'json',
+							 url: ''+localStorage.base_url+'/load/app_get_load_by_driver/'+id_driver,
+							success: function(data){
+											console.log(data);
+											active_loads_number = 0;
+											$("#lol_item").html("");
+											$("#lol_item").append('<tr><th width="33%"> DATE </th><th width="33%"> JOB # </th><th width="33%"> SHIPMENTS </th></tr>');
+											$("#lol_item_inactive").html("");
+											$("#lol_item_inactive").append('<tr><th width="33%"> DATE </th><th width="33%"> JOB # </th><th width="33%"> SHIPMENTS </th></tr>');
+											if(localStorage.inactive == 1){
+												     $('#lol_item').hide();
+												}else{
+													 $("#lol_item_inactive").hide();
+													}
+											for(i=0;i<data.length;i++){
+												
+												if((data[i].sw == 1)&&(data[i].tender == 1)){
+													
+													//-----Check  for every signature in the load to set active or inactive status.-----//
+													$.ajax({
+														type:'POST',
+														dataType:'json',
+														url:''+localStorage.base_url+'/load/app_get_shipments_by_load/'+data[i].idts_load,
+														async:false,
+														success: function(data_s){
+															active_shipment = 0;
+															shipment_number = 0;
+																for(j=0;j<data_s.length;j++){
+																	  if(data_s[j].destination_sign == '0'){
+																			  active_shipment++;
+																			  shipment_number++;
+																		  }else{
+																			  shipment_number++;
+																			  };
+																	};
+																$.mobile.loading("hide");
+																localStorage.active_shipment = active_shipment;
+																console.log(data_s);
+															},
+														error: function(data_s){
+															console.log(data_s);
+															}
+														});
+														if(active_shipment >= 1){
+															//alert('there is one active');
+																active_loads_number++; //---- number of active loads. Check if there is any active. ----//
+																$("#lol_item").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: red;" class="" onclick="active_shipments_load('+data[i].idts_load+','+data[i].load_number+')"><h3>'+data[i].load_number+'</h3></a></td><td align="center">'+shipment_number+'</td></tr>');
+															}else{
+														//Change load detals. Just to see old BOL's
+																$("#lol_item_inactive").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: black;" class="" onclick="inactive_shipments_load('+data[i].idts_load+','+data[i].load_number+')"><h3>'+data[i].load_number+'</h3></a></td><td align="center">'+shipment_number+'</td></tr>');
+																}
+													} 
+												}
+												//localStorage.active_shipment = active_shipment;
+											$('#loading_loads').html(""); //--Delete Loading Gif when all loads are checked. -----/
+											$.mobile.loading("hide");
+											
+									//-------------- SEND REGISTER ID TO DATABASE --- ANDROID CLOUD MESSAGING --- PUSH
+									setTimeout(function(){
+										var token = localStorage.token; // $('#token_device_hid').html();
+										var id = localStorage.user_id;
+										$.ajax({
+											type: 'POST',
+											//data: {token_device: token, driver_id: id},
+											data: {token_device: token, driver_id: id},
+											async: false,
+											url: ''+localStorage.save_url+'/saveid_apple.php',
+											success: function(data){
+												console.log(data);
+											},
+											error: function(){
+												console.log(data);
+											}})			
+										},1000);
+										//--------------------
+										//---trace load adjustments----
+									if(active_loads_number >= 1){
+										      $('#active_ld').attr('src','css/active_active.png');
+				                              $('#history_ld').attr('src','css/history_inactive.png');
+											  $('#lol_item_inactive').hide();
+											  $('#lol_item').show();
+										// Start interval, just when new one arrives (or there is one active) //
+											if(localStorage.location_mark == 1){
+												}else{
+													//alert('location 60 seconds');
+													 driver_location_interval = setInterval(function(){
+															navigator.geolocation.getCurrentPosition(onSuccess, onError);
+																  function onSuccess(position) {
+																	 var x = position.coords.latitude;
+																	 var y = position.coords.longitude;
+																	 send_location(x,y);
+																	}
+																   function onError(error) {
+																	  navigator.notification.alert(
+																		  'GPS access error',
+																		  alertCallback,
+																		  'Smith TracknGo',
+																		  'Ok');
+																	}
+														 },60000);
+													localStorage.location_mark = 1;
+												}
+										}else{
+											  $('#active_ld').attr('src','css/active_inactive.png');
+				                              $('#history_ld').attr('src','css/history_active.png');
+											  $('#lol_item_inactive').show();
+											  $('#lol_item').hide();
+											};
+		 // Changed from 20 Seconds to 40 seconds Aprox. //20151008 changed to 60
+										},
+                            error: function(data){
+                                console.log(data);
+								navigator.notification.alert(
+															  'There was an error with active loads 3',
+															  alertCallback,
+															  'Smith TracknGo',
+															  'Ok');
+                            }})
+				};
+				
+        function active_load2(id_driver){
+			                  var active_shipment;// Active shipments counter variable. //
+							  var shipment_number; // Number of shipments, active or inactive.
+							 $.ajax({
+							 type: 'POST',
+							 async: false,
+							 dataType: 'json',
+							 url: ''+localStorage.base_url+'/load/app_get_load_by_driver/'+id_driver,
+							success: function(data){
+											console.log(data);
+											active_loads_number = 0;
+											$("#lol_item").html("");
+											$("#lol_item").append('<tr><th width="33%"> DATE </th><th width="33%"> JOB # </th><th width="33%"> SHIPMENTS </th></tr>');
+											$("#lol_item_inactive").html("");
+											$("#lol_item_inactive").append('<tr><th width="33%"> DATE </th><th width="33%"> JOB # </th><th width="33%"> SHIPMENTS </th></tr>');
+											if(localStorage.inactive == 1){
+												     $('#lol_item').hide();
+												}else{
+													 $("#lol_item_inactive").hide();
+													}
+											for(i=0;i<data.length;i++){
+												
+												if((data[i].sw == 1)&&(data[i].tender == 1)){
+													
+													//-----Check  for every signature in the load to set active or inactive status.-----//
+													$.ajax({
+														type:'POST',
+														dataType:'json',
+														url:''+localStorage.base_url+'/load/app_get_shipments_by_load/'+data[i].idts_load,
+														async:false,
+														success: function(data_s){
+															active_shipment = 0;
+															shipment_number = 0;
+																for(j=0;j<data_s.length;j++){
+																	  if(data_s[j].destination_sign == '0'){
+																			  active_shipment++;
+																			  shipment_number++;
+																		  }else{
+																			  shipment_number++;
+																			  };
+																	};
+																$.mobile.loading("hide");
+																localStorage.active_shipment = active_shipment;
+																console.log(data_s);
+															},
+														error: function(data_s){
+															console.log(data_s);
+															}
+														});
+														if(active_shipment >= 1){
+															//alert('there is one active');
+																active_loads_number++; //---- number of active loads. Check if there is any active. ----//
+																$("#lol_item").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: red;" class="" onclick="active_shipments_load('+data[i].idts_load+','+data[i].load_number+')"><h3>'+data[i].load_number+'</h3></a></td><td align="center">'+shipment_number+'</td></tr>');
+															}else{
+														//Change load detals. Just to see old BOL's
+																$("#lol_item_inactive").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: black;" class="" onclick="inactive_shipments_load('+data[i].idts_load+','+data[i].load_number+')"><h3>'+data[i].load_number+'</h3></a></td><td align="center">'+shipment_number+'</td></tr>');
+																}
+													} 
+												}
+												//localStorage.active_shipment = active_shipment;
+											$('#loading_loads').html(""); //--Delete Loading Gif when all loads are checked. -----/
+											$.mobile.loading("hide");
+											
+									//-------------- SEND REGISTER ID TO DATABASE --- ANDROID CLOUD MESSAGING --- 
+										//--------------------
+										//---trace load adjustments----
+									if(active_loads_number >= 1){
+										      $('#active_ld').attr('src','css/active_active.png');
+				                              $('#history_ld').attr('src','css/history_inactive.png');
+											  $('#lol_item_inactive').hide();
+											  $('#lol_item').show();
+										// Start interval, just when new one arrives (or there is one active) //
+											if(localStorage.location_mark == 1){
+												}else{
+													//alert('location 60 seconds');
+													 driver_location_interval = setInterval(function(){
+															navigator.geolocation.getCurrentPosition(onSuccess, onError);
+																  function onSuccess(position) {
+																	 var x = position.coords.latitude;
+																	 var y = position.coords.longitude;
+																	 send_location(x,y);
+																	}
+																   function onError(error) {
+																	  navigator.notification.alert(
+																		  'GPS access error',
+																		  alertCallback,
+																		  'Smith TracknGo',
+																		  'Ok');
+																	}
+														 },60000);
+													localStorage.location_mark = 1;
+												}
+										}else{
+											  $('#active_ld').attr('src','css/active_inactive.png');
+				                              $('#history_ld').attr('src','css/history_active.png');
+											  $('#lol_item_inactive').show();
+											  $('#lol_item').hide();
+											};
+		 // Changed from 20 Seconds to 40 seconds Aprox. //20151008 changed to 60
+										},
+                            error: function(data){
+                                console.log(data);
+								navigator.notification.alert(
+															  'There was an error with active loads 33',
+															  alertCallback,
+															  'Smith TracknGo',
+															  'Ok');
+                            }})
+				};
+
+localStorage.comma = "'";
+		//------- LOAD SHIPMENTS -----//
+		function active_shipments_load(load_id,load_number){
+			$.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;" />'});
+			              $('#load_number_hid').html(load_number);
+			              
+							 localStorage.active_shipment_counter = "";
+				             var active_shipment_counter = 0;
+							//---Markers for resets, traces and more---//
+								localStorage.inactive = 0;
+								//Activating Comment again
+								localStorage.comment = 0;
+								localStorage.start ="";
+								localStorage.finish = 0;
+								localStorage.load_hid = load_id;
+							 //---END of Markers for resets, traces and more---//
+							 
+							 localStorage.load_id_bol = load_id;
+							  //----- After being Closed and Reopened ---//
+						   if(localStorage.tobecontinued == 1){
+							   //if(trace_mark == 2){}else{
+							      localStorage.double_trace_mark = 1;
+							      trace_load2();
+								 // alert('I got inside trace 1');
+								  //alert('tobecontinued == 1')
+								  localStorage.tobecontinued = 0;
+							   //};
+							   }
+						   //-----------------------------------------//
+							 //---Last active Load ---// GO directly to last active load checked
+							 localStorage.last_active_load = localStorage.load_id_bol;
+							  //---END of Last active Load ---//
+							 localStorage.load_number = load_number;
+							 //---Last active Load NUMBER---// GO directly to last active load checked
+							 localStorage.last_active_load_number = localStorage.load_number;
+							 $.ajax({
+							 type: 'POST',
+							 async:false,
+							 dataType: 'json',
+							 url:''+localStorage.base_url+'/load/app_get_shipments_by_load/'+load_id,
+							
+	                            success: function(data){
+	                                console.log(data);
+									//active_loads_number = 0;
+									//Load's number to guide the user. BOL's with current load number.
+									$("#load_shipment, #load_shipment1, #load_shipment4").html(" JOB # :"+'<a style="color:#fff" id="bol" href="#" x-apple-data-detectors="false">'+load_number+'</a>');
+								    $("#lol_item_shipment").html("");
+								    $("#lol_item_shipment").append('<tr><th width="33%"> DATE </th><th width="33%"> BOL # </th><th width="33%">&nbsp;</th></tr>');
+									$("#lol_item_shipment_inactive").html("");
+									$("#lol_item_shipment_inactive").append('<tr><th width="33%"> DATE </th><th width="33%"> BOL # </th><th width="33%">&nbsp;</th></tr>');
+									$("#lol_item_shipment_inactive").hide();
+									var pages;
+									for(i=0;i<data.length;i++){
+										if(data[i].destination_sign == 0){
+											//Active shipment counter for trace control
+											   active_shipment_counter++;
+											   if(data[i].pages_number>1){pages = ' pages'}else{pages = ' page'}
+												$("#lol_item_shipment").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: red;" class="" onclick="bol_details('+data[i].ts_load_idts_load+','+localStorage.comma+data[i].bol_number+localStorage.comma+','+data[i].pages_number+','+data[i].origin_sign+','+data[i].destination_sign+','+data[i].pickup_lat+','+data[i].pickup_lng+','+data[i].drop_lat+','+data[i].drop_lng+','+localStorage.comma+data[i].pickup_address2+localStorage.comma+','+localStorage.comma+data[i].drop_address2+localStorage.comma+')"><h3>'+data[i].bol_number+'</h3></a></td><td>'+data[i].pages_number+pages+'</td></tr>');
+											//----------
+											localStorage.id_load_t = data[i].ts_load_idts_load;
+											localStorage.bol_number_t = data[i].bol_number;
+											localStorage.pages_number_t = data[i].pages_number;
+											localStorage.origin_sign_t = data[i].origin_sign;
+											localStorage.destination_sign_t = data[i].destination_sign;
+											localStorage.pickup_lat_t = data[i].pickup_lat;
+											localStorage.pickup_lng_t = data[i].pickup_lng;
+											localStorage.drop_lat_t = data[i].drop_lat;
+											localStorage.drop_lng_t = data[i].drop_lng;
+											localStorage.pick_add_t = data[i].pickup_address2;
+											localStorage.drop_add_t = data[i].drop_address2;
+											//----------
+											  localStorage.active_shipment_counter = active_shipment_counter;
+											}else{
+												//Change load detals. Just to see old BOL's
+												if(data[i].pages_number>1){pages = ' pages'}else{pages = ' page'}
+												$("#lol_item_shipment").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: black;" class="" onclick="bol_details('+data[i].ts_load_idts_load+','+localStorage.comma+data[i].bol_number+localStorage.comma+','+data[i].pages_number+','+data[i].origin_sign+','+data[i].destination_sign+','+data[i].pickup_lat+','+data[i].pickup_lng+','+data[i].drop_lat+','+data[i].drop_lng+','+localStorage.comma+data[i].pickup_address2+localStorage.comma+','+localStorage.comma+data[i].drop_address2+localStorage.comma+')"><h3>'+data[i].bol_number+'</h3></a></td><td>'+data[i].pages_number+pages+'</td></tr>');
+												}
+										}
+
+								    $.mobile.loading("hide");
+									$('#loading_shipments').html("");
+                                },
+                            error: function(data){
+                                console.log(data);
+								navigator.notification.alert(
+															  'There was an error with active loads 4',
+															  alertCallback,
+															  'Smith TracknGo',
+															  'Ok');
+                            }})
+							//-----------move to page 2_5 if single bol -------------//
+							if(localStorage.active_shipment_counter == '1'){
+												if(localStorage.inactive == 1){
+													//alert('local inactive 1');
+													}else{
+														//alert('local inactive 1 ??');
+														if(localStorage.load_hid == localStorage.load_hid_2){
+															//alert('local load_hid & load_hid2');
+															}else{
+														   // alert('trace_load activated')
+														   if(localStorage.double_trace_mark == 1){}else{
+															     trace_load();
+																 //alert('I got inside trace 2');
+														   }
+														}
+													}
+												if(localStorage.inactive == 1){}else{
+										//------------
+												//unchanged_shipments_load(localStorage.load_id_bol,localStorage.load_number);
+										//------------
+												if ((localStorage.start == 1)){
+														}else{
+													setTimeout(function(){
+														//--- Start location intervals Just Once ---- Mark ----//
+															  localStorage.start = 1;
+															},100);
+														}
+												localStorage.load_hid = localStorage.load_hid_2;
+										//-----------------------------------------	
+												}
+												//----MOVE if there is only one active shipment
+													  bol_details(localStorage.id_load_t,localStorage.bol_number_t,localStorage.pages_number_t,localStorage.origin_sign_t,localStorage.destination_sign_t,localStorage.pickup_lat_t,localStorage.pickup_lng_t,localStorage.drop_lat_t,localStorage.drop_lng_t, localStorage.pick_add_t, localStorage.drop_add_t);
+													  $('#back_change').attr('href','#page1_1');
+											}else{
+								 //----END---  MOVE if there is only one active shipment
+							location.href = '#page2';
+											}
+							localStorage.double_trace_mark = 0;
+	    	};
+//------- ACTIVE SHIPMENTS LOAD NOTIFICATION ----- ///
+function active_shipments_load_not(load_id,load_number){};
+			
+//-------------------INACTIVE SHIPMENTS LOAD---------------------------//
+		function inactive_shipments_load(load_id,load_number){
+							  $.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;" />'});
+							  var inactive_shipment_counter = 0;
+							  //////////////////--------
+							  localStorage.load_id_bol = load_id;
+							  //////////////////--------
+			                  localStorage.inactive = 1;
+				              $('#load_hid').html(load_id);
+							  $('#load_number_hid').html(load_number);
+				              localStorage.load_number = load_number;
+							  //-----------------------
+												 $.ajax({
+												 type: 'POST',
+												 async:false,
+												 dataType: 'json',
+												 url:''+localStorage.base_url+'/load/app_get_shipments_by_load/'+load_id,
+													success: function(data){
+														console.log(data);
+														//active_loads_number = 0;
+														//Load's number to guide the user. BOL's with current load number.
+														$("#load_shipment, #load_shipment1, #load_shipment4").html(" JOB # :"+'<a style="color:#fff" id="bol" href="#" x-apple-data-detectors="false">'+load_number+'</a>');
+														$('#header_load_number2').html("JOB # :"+$('#load_number_hid').html());
+														$("#lol_item_shipment").html("");
+														$("#lol_item_shipment").append('<tr><th width="33%"> DATE </th><th width="33%"> BOL # </th><th width="33%">&nbsp;</th></tr>');
+														$("#lol_item_shipment_inactive").html("");
+														$("#lol_item_shipment_inactive").append('<tr><th width="33%"> DATE </th><th width="33%"> BOL # </th><th width="33%">&nbsp;</th></tr>');
+														$("#lol_item_shipment_inactive").hide();
+														var pages;
+														for(i=0;i<data.length;i++){
+															if(data[i].destination_sign == 0){
+																  //Active shipment counter for trace control
+																  //active_shipment_counter++;
+																   if(data[i].pages_number>1){pages = ' pages'}else{pages = ' page'}
+																	$("#lol_item_shipment").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: red;" class="" onclick="bol_details('+data[i].ts_load_idts_load+','+localStorage.comma+data[i].bol_number+localStorage.comma+','+data[i].pages_number+','+data[i].origin_sign+','+data[i].destination_sign+','+data[i].pickup_lat+','+data[i].pickup_lng+','+data[i].drop_lat+','+data[i].drop_lng+','+localStorage.comma+data[i].pickup_address2+localStorage.comma+','+localStorage.comma+data[i].drop_address2+localStorage.comma+')"><h3>'+data[i].bol_number+'</h3></a></td><td>'+data[i].pages_number+pages+'</td></tr>');
+																	
+																}else{
+																	inactive_shipment_counter++;
+																	//Change load detals. Just to see old BOL's
+																	if(data[i].pages_number>1){pages = ' pages'}else{pages = ' page'}
+																	$("#lol_item_shipment").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: black;" class="" onclick="bol_details('+data[i].ts_load_idts_load+','+localStorage.comma+data[i].bol_number+localStorage.comma+','+data[i].pages_number+','+data[i].origin_sign+','+data[i].destination_sign+','+data[i].pickup_lat+','+data[i].pickup_lng+','+data[i].drop_lat+','+data[i].drop_lng+','+localStorage.comma+data[i].pickup_address2+localStorage.comma+','+localStorage.comma+data[i].drop_address2+localStorage.comma+')"><h3>'+data[i].bol_number+'</h3></a></td><td>'+data[i].pages_number+pages+'</td></tr>');
+																	//----------
+																	localStorage.id_load_t = data[i].ts_load_idts_load;
+																	localStorage.bol_number_t = data[i].bol_number;
+																	localStorage.pages_number_t = data[i].pages_number;
+																	localStorage.origin_sign_t = data[i].origin_sign;
+																	localStorage.destination_sign_t = data[i].destination_sign;
+																	localStorage.pickup_lat_t = data[i].pickup_lat;
+																	localStorage.pickup_lng_t = data[i].pickup_lng;
+																	localStorage.drop_lat_t = data[i].drop_lat;
+																	localStorage.drop_lng_t = data[i].drop_lng;
+																	localStorage.pick_add_t = data[i].pickup_address2;
+																	localStorage.drop_add_t = data[i].drop_address2;
+																	//----------
+																	localStorage.inactive_shipment_counter = inactive_shipment_counter;
+																	}
+															}
+															/*if(active_shipment_counter == 1){
+										bol_details(id_load,localStorage.comma+bol_number+localStorage.comma,pages_number,origin_sign,destination_sign,pickup_lat,pickup_lng,drop_lat,drop_lng);
+										}*/               $.mobile.loading("hide");
+														$('#loading_shipments').html("");
+													},
+												error: function(data){
+													console.log(data);
+													navigator.notification.alert(
+																  'There was an error with active loads 5',
+																  alertCallback,
+																  'Smith TracknGo',
+																  'Ok');
+												}})
+								//-----------move to page 2_5 if single bol -------------//
+							if(localStorage.inactive_shipment_counter == '1'){
+												if(localStorage.inactive == 1){
+													}else{
+														if(localStorage.load_hid == localStorage.load_hid_2){
+															}else{
+														   // alert('trace_load activated')
+															trace_load();
+														}
+													}
+												if(localStorage.inactive == 1){}else{
+										//------------
+												//unchanged_shipments_load(localStorage.load_id_bol,localStorage.load_number);
+										//------------
+												if ((localStorage.start == 1)){
+														}else{
+													setTimeout(function(){
+														//--- Start location intervals Just Once ---- Mark ----//
+															  localStorage.start = 1;
+															},100);
+														}
+												localStorage.load_hid = localStorage.load_hid_2;
+										//-----------------------------------------	
+												}
+												//----MOVE if there is only one active shipment
+												
+													setTimeout(function(){
+													  bol_details(localStorage.id_load_t,localStorage.bol_number_t,localStorage.pages_number_t,localStorage.origin_sign_t,localStorage.destination_sign_t,localStorage.pickup_lat_t,localStorage.pickup_lng_t,localStorage.drop_lat_t,localStorage.drop_lng_t, localStorage.pick_add_t, localStorage.drop_add_t);
+													  $('#back_change').attr('href','#page1_1');
+													},0);
+											}else{
+								 //----END---  MOVE if there is only one active shipment
+							location.href = '#page2';
+											}
+							          };
+//--------------------UNCHANGED SHIPMENTS----------------------//
+		function unchanged_shipments_load(load_id,load_number){
+							 $.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;" />'});
+							$('#load_number_hid').html(load_number);
+			                  localStorage.active_shipment_counter = "";
+			                  var active_shipment_counter = 0;
+     						//---Markers for resets, traces and more---//
+							  localStorage.comment = 0;
+					          localStorage.load_hid_2 = load_id;
+							 //---END of Markers for resets, traces and more---//
+							// location.href = '#page2';
+							 localStorage.load_id_bol = load_id;
+							 localStorage.load_number = load_number;
+							 $.ajax({
+							 type: 'POST',
+							 async:false,
+							 dataType: 'json',
+							 url:''+localStorage.base_url+'/load/app_get_shipments_by_load/'+load_id,
+	                            success: function(data){
+	                                console.log(data);
+									//active_loads_number = 0;
+									//Load's number to guide the user. BOL's with current load number.
+									$("#load_shipment, #load_shipment1, #load_shipment4").html(" JOB # :"+'<a style="color:#fff" id="bol" href="#" x-apple-data-detectors="false">'+load_number+'</a>');
+								    $('#header_load_number2').html("JOB # :"+$('#load_number_hid').html());
+								    $("#lol_item_shipment").html("");
+								    $("#lol_item_shipment").append('<tr><th width="33%"> DATE </th><th width="33%"> BOL # </th><th width="33%">&nbsp;</th></tr>');
+									$("#lol_item_shipment_inactive").html("");
+									$("#lol_item_shipment_inactive").append('<tr><th width="33%"> DATE </th><th width="33%"> BOL # </th><th width="33%">&nbsp;</th></tr>');
+									$("#lol_item_shipment_inactive").hide();
+									var pages;
+									for(i=0;i<data.length;i++){
+										if(data[i].destination_sign == 0){
+											  //Active shipment counter for trace control
+											   active_shipment_counter++;
+											   if(data[i].pages_number>1){pages = ' pages'}else{pages = ' page'}
+												$("#lol_item_shipment").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: red;" class="" onclick="bol_details('+data[i].ts_load_idts_load+','+localStorage.comma+data[i].bol_number+localStorage.comma+','+data[i].pages_number+','+data[i].origin_sign+','+data[i].destination_sign+','+data[i].pickup_lat+','+data[i].pickup_lng+','+data[i].drop_lat+','+data[i].drop_lng+','+localStorage.comma+data[i].pickup_address2+localStorage.comma+','+localStorage.comma+data[i].drop_address2+localStorage.comma+')"><h3>'+data[i].bol_number+'</h3></a></td><td>'+data[i].pages_number+pages+'</td></tr>');
+																	//----------
+																	localStorage.id_load_t = data[i].ts_load_idts_load;
+																	localStorage.bol_number_t = data[i].bol_number;
+																	localStorage.pages_number_t = data[i].pages_number;
+																	localStorage.origin_sign_t = data[i].origin_sign;
+																	localStorage.destination_sign_t = data[i].destination_sign;
+																	localStorage.pickup_lat_t = data[i].pickup_lat;
+																	localStorage.pickup_lng_t = data[i].pickup_lng;
+																	localStorage.drop_lat_t = data[i].drop_lat;
+																	localStorage.drop_lng_t = data[i].drop_lng;
+																	localStorage.pick_add_t = data[i].pickup_address2;
+																	localStorage.drop_add_t = data[i].drop_address2;
+																	//----------
+																	localStorage.active_shipment_counter = active_shipment_counter;
+											}else{
+												//Change load detals. Just to see old BOL's
+												if(data[i].pages_number>1){pages = ' pages'}else{pages = ' page'}
+												$("#lol_item_shipment").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: black;" class="" onclick="bol_details('+data[i].ts_load_idts_load+','+localStorage.comma+data[i].bol_number+localStorage.comma+','+data[i].pages_number+','+data[i].origin_sign+','+data[i].destination_sign+','+data[i].pickup_lat+','+data[i].pickup_lng+','+data[i].drop_lat+','+data[i].drop_lng+','+localStorage.comma+data[i].pickup_address2+localStorage.comma+','+localStorage.comma+data[i].drop_address2+localStorage.comma+')"><h3>'+data[i].bol_number+'</h3></a></td><td>'+data[i].pages_number+pages+'</td></tr>');
+												}
+										}
+										/*if(active_shipment_counter == 1){
+										bol_details(id_load,localStorage.comma+bol_number+localStorage.comma,pages_number,origin_sign,destination_sign,pickup_lat,pickup_lng,drop_lat,drop_lng);
+										}*/
+										$.mobile.loading("hide")
+									$('#loading_shipments').html("");
+                                },
+                            error: function(data){
+                                console.log(data);
+								navigator.notification.alert(
+											  'There was an error with active loads 6',
+											  alertCallback,
+											  'Smith TracknGo',
+											  'Ok');
+                            }})
+							
+			};
+//------- UPDATE SHIPMENTS (LOAD) ------------//
+
+function update_shipments_load(load_id){
+						 $.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;" />'});
+						
+						$.ajax({
+							 type: 'POST',
+							 async:false,
+							 dataType: 'json',
+							 url:''+localStorage.base_url+'/load/app_get_shipments_by_load/'+load_id,
+	                            success: function(data){
+	                                console.log(data);
+									//active_loads_number = 0;
+									//Load's number to guide the user. BOL's with current load number.
+									$("#load_shipment, #load_shipment1, #load_shipment4").html(" JOB # :"+'<a style="color:#fff" id="bol" href="#" x-apple-data-detectors="false">'+load_number+'</a>');
+									$('#header_load_number2').html("JOB # :"+localStorage.load_number);
+								    $("#lol_item_shipment").html("");
+								    $("#lol_item_shipment").append('<tr><th width="33%"> DATE </th><th width="33%"> BOL # </th><th width="33%">&nbsp;</th></tr>');
+									$("#lol_item_shipment_inactive").html("");
+									$("#lol_item_shipment_inactive").append('<tr><th width="33%"> DATE </th><th width="33%"> BOL # </th><th width="33%">&nbsp;</th></tr>');
+									$("#lol_item_shipment_inactive").hide();
+									var pages;
+									for(i=0;i<data.length;i++){
+										if(data[i].destination_sign == 0){
+											  //Active shipment counter for trace control
+											   active_shipment_counter++;
+											   if(data[i].pages_number>1){pages = ' pages'}else{pages = ' page'}
+												$("#lol_item_shipment").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: red;" class="" onclick="bol_details('+data[i].ts_load_idts_load+','+localStorage.comma+data[i].bol_number+localStorage.comma+','+data[i].pages_number+','+data[i].origin_sign+','+data[i].destination_sign+','+data[i].pickup_lat+','+data[i].pickup_lng+','+data[i].drop_lat+','+data[i].drop_lng+','+localStorage.comma+data[i].pickup_address2+localStorage.comma+','+localStorage.comma+data[i].drop_address2+localStorage.comma+')"><h3>'+data[i].bol_number+'</h3></a></td><td>'+data[i].pages_number+pages+'</td></tr>');
+											   //----------
+												localStorage.id_load_t = data[i].ts_load_idts_load;
+												localStorage.bol_number_t = data[i].bol_number;
+												localStorage.pages_number_t = data[i].pages_number;
+												localStorage.origin_sign_t = data[i].origin_sign;
+												localStorage.destination_sign_t = data[i].destination_sign;
+												localStorage.pickup_lat_t = data[i].pickup_lat;
+												localStorage.pickup_lng_t = data[i].pickup_lng;
+												localStorage.drop_lat_t = data[i].drop_lat;
+												localStorage.drop_lng_t = data[i].drop_lng;
+												localStorage.pick_add_t = data[i].pickup_address2;
+												localStorage.drop_add_t = data[i].drop_address2;
+												//----------
+												localStorage.active_shipment_counter = active_shipment_counter;
+											}else{
+												//Change load detals. Just to see old BOL's
+												if(data[i].pages_number>1){pages = ' pages'}else{pages = ' page'}
+												$("#lol_item_shipment").append('<tr><td>'+data[i].date_created+'</td><td><a href="#" style="color: black;" class="" onclick="bol_details('+data[i].ts_load_idts_load+','+localStorage.comma+data[i].bol_number+localStorage.comma+','+data[i].pages_number+','+data[i].origin_sign+','+data[i].destination_sign+','+data[i].pickup_lat+','+data[i].pickup_lng+','+data[i].drop_lat+','+data[i].drop_lng+','+localStorage.comma+data[i].pickup_address2+localStorage.comma+','+localStorage.comma+data[i].drop_address2+localStorage.comma+')"><h3>'+data[i].bol_number+'</h3></a></td><td>'+data[i].pages_number+pages+'</td></tr>');
+												}
+										}
+									/*if(active_shipment_counter == 1){
+										bol_details(id_load,localStorage.comma+bol_number+localStorage.comma,pages_number,origin_sign,destination_sign,pickup_lat,pickup_lng,drop_lat,drop_lng);
+										}*/
+									$('#loading_shipments').html("");
+									$.mobile.loading("hide");
+                                },
+                            error: function(data){
+                                console.log(data);
+								navigator.notification.alert(
+											  'There was an error with active loads 7',
+											  alertCallback,
+											  'Smith TracknGo',
+											  'Ok');
+                            }})
+							location.href = '#page2';
+};
+		//---------------------------Query DATA From SERVER  -------------------
+			$('#login_phone').click(function(){
+				$.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;" />'});
+				$('#start_button').hide();
+				$('#loading_start').show();
+				var cont_2 = 0;
+				var user_name = $('#user_name').val();
+				//alert(user_name);
+				$.ajax({
+					 type: 'POST',
+					 dataType: 'json',
+					 url: ''+localStorage.base_url+'/driver/app_get',
+					 success: function(data){
+						 $('#start_button').show();
+				         $('#loading_start').hide();
+						 for(i=0;i<data.length;i++){
+							 if (data[i].phone == user_name){
+								 cont_2 = 1;
+								 $('#hid_uid').html(data[i].idts_driver);
+								 $('#full_name').html(data[i].full_name);
+								 $('#full_name1').html(data[i].full_name);
+								 $('#full_name0_2').html(data[i].full_name);
+								 $('#full_name0').html(data[i].full_name);
+								 //$('#full_name2').html(data[i].full_name);
+								 $('#full_name3').html(data[i].full_name);
+								 $('#full_name4').html(data[i].full_name);
+								 $('#full_name5').html(data[i].full_name);
+								 $('#full_name6').html(data[i].full_name);
+								 $('#full_name7').html(data[i].full_name);
+								 localStorage.name = data[i].full_name;
+								 }
+							 };
+							  if (cont_2 == 1){
+										localStorage.user_id = parseFloat($('#hid_uid').html());
+										window.plugins.insomnia.keepAwake();
+										//alert(localStorage.user_id)
+										//active_load(localStorage.user_id);
+										location.href = "#page1_1";
+										$.mobile.loading("hide");
+								 	}else{
+										navigator.notification.alert(
+										  'Invalid User',
+										  alertCallback,
+										  'Smith TracknGo',
+										  'Ok');
+										  $.mobile.loading("hide");
+									 }
+						console.log(data);
+					 },
+					 error: function(){
+						console.log(data);
+						navigator.notification.alert(
+								  'There was an error, Please try again 1',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+					 }})
+			 });
+			
+
+		
+		// Load BOL details -----///
+	
+           function bol_details(load_id,bol_number,pages_number,origin,destination,pickup_lat,pickup_lng,drop_lat,drop_lng,pickup_add_2,drop_add_2){
+			   //var map_interval;
+			   // Check if there is original document
+			   if(pages_number == 0){
+				       $('#original_shipper').hide();
+					   $('#original_consignee').hide();
+				   }else{
+					    $('#original_shipper').show();
+					    $('#original_consignee').show();
+					   }
+			   //------------------//
+			   localStorage.pickup_lat_val = pickup_lat;
+			   localStorage.pickup_lng_val = pickup_lng;
+			   localStorage.drop_lat_val = drop_lat;
+			   localStorage.drop_lng_val = drop_lng;
+			   $.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;" />'});
+			        if(origin == 0){
+						     localStorage.signature = 0; // SAVE BOL button ask to saving shipper signature
+						}else{
+						     localStorage.signature = 1; // SAVE BOL button ask to saving consignee signature
+						 }
+					 if(destination == 1){
+						     //$('#save_bol').hide();
+							 localStorage.completed = 1;
+						 }else{
+							 //$('#save_bol').show();
+							 localStorage.completed = 0;
+							 }
+					
+			   		//--- Clicks counter to change pages ---//
+					localStorage.cont_pages = 0;
+					//--- Number of pages for this BOL. --//		
+				    localStorage.pages = pages_number;
+					//----BOL Number for image drawing.
+					localStorage.bol_number = bol_number;
+					//------------------------------//
+			   		$("#image_source").attr('src','css/loading2.gif');
+			   		$('#load_hid').html(load_id);
+					//Show take picture for the shipper
+					$('#shipper_take_picture').show();
+					$('#consignee_take_picture').show();
+				   
+                    var latitude_driver = parseFloat($('#latitude').val());//37.55;
+                    var longitude_driver = parseFloat($('#longitude').val());//-77.44;
+					var pickup_lat_val = parseFloat(pickup_lat);
+					var pickup_lng_val = parseFloat(pickup_lng);
+					var drop_lat_val = parseFloat(drop_lat);
+					var drop_lng_val = parseFloat(drop_lng);
+		    		var id_driver = $('#user_name').val();
+					//alert(latitude_driver+'-'+longitude_driver+'-'+pickup_lat_val+'-'+pickup_lng_val+'-'+drop_lat_val+'-'+drop_lng_val);
+					// Interval for refresh map's call
+					  //alert('bol_details clicked');
+                        $.ajax({
+                            type: 'POST',
+			    			dataType: 'json',
+							async: false,
+                            url: ''+localStorage.base_url+'/load/app_get_shipments_by_load/'+load_id,
+                            success: function(data){
+								//alert('shipment-'+load_id+'-success');
+                            console.log(data);
+					       for(k=0;k<data.length;k++){
+							   //alert('inside the "for"');
+								if(data[k].bol_number == localStorage.bol_number){
+									//ETA for Shipper
+										if(data[k].origin_sign == 1){
+											     $('#eta_shipper').html("Completed");
+												 localStorage.origin_sign = 1;
+											}else{
+												localStorage.origin_sign = 0;
+												 //$('#eta_shipper').html();
+												};
+									// End of ETA for Shipper
+									//---ETA for Consignee
+									if(data[k].destination_sign == 1){
+												 $('#eta_consignee').html("Completed");
+												 localStorage.destination_sign = 1;
+											}else{
+												 localStorage.destination_sign = 0;
+												 //$('#eta_consignee').html();
+												};
+									// End of ETA for Consignee
+									       localStorage.shipment_id = data[k].idshipment;
+									//alert('bol number number');
+											$("#header_load").html("BOL # :"+'<a id="bol" href="#" x-apple-data-detectors="false">'+data[k].bol_number+'</a>');
+											$('#header_load_number').html("JOB # :"+$('#load_number_hid').html());
+											  if(data[k].special_instructions != null){
+													 $('#special_instructions_text').html(data[k].special_instructions);
+												};
+												if(data[k].special_instructions2 != null){
+													 $('#special_instructions_text2').html(data[k].special_instructions2);
+												};
+												if(data[k].company_name != null){
+													   $('#company1').html(data[k].company_name);
+													};
+												if(data[k].company_name2 != null){
+													   $('#company2').html(data[k].company_name2);
+													};
+												if(data[k].pickup_time != null){
+													   $('#op_time_pk').html(data[k].pickup_time);
+													};
+												if(data[k].drop_time != null){
+													   $('#op_time_dp').html(data[k].drop_time);
+													};
+												if(data[k].reference != null){
+													   $('#reference1').html(data[k].reference);
+													};
+												if(data[k].reference2 != null){
+													   $('#reference2').html(data[k].reference2);
+													};
+												if(data[k].pickup_number != null){
+													   $('#pickup_number').html(data[k].pickup_number);
+													};
+												if(data[k].drop_number != null){
+													   $('#drop_number').html(data[k].drop_number);
+													};
+									//alert('bol number number-2');
+											$('#shipper_photos').html('');
+											$('#shp_sig_options').html('');
+											//--------------
+											if(data[k].pickup_doc_pages >= 1){
+												localStorage.shipper_counter = parseFloat(data[k].pickup_doc_pages) + 1;
+											}else{
+												localStorage.shipper_counter = 1;
+												}
+										    //--------------
+
+											$.ajax({
+													 type: 'POST',
+													 async:false,
+													 dataType: 'json',
+													 url:''+localStorage.base_url+'/load/app_get_docs_by_shipment/'+localStorage.shipment_id,
+													 success: function(data){
+														 //alert('bol number number-3');
+														 $('#lol_item_documents').html('');
+														 $('#lol_item_documents').append('<tr><th width="40%"> DATE </th><th width="60%">DOCUMENT NAME</th></tr>');
+															console.log(data);
+															for(i=0;i<data.length;i++){
+																//alert('docs by shipment');
+																var doc_date = data[i].date_created;
+												                 var split_doc_date = doc_date.split(' ');
+												                 var split_doc_date_1 = split_doc_date[0].split('-');
+																$('#lol_item_documents').append('<tr><td>'+split_doc_date_1[1]+'/'+split_doc_date_1[2]+'/'+split_doc_date_1[0]+'</td><td><a style="color:blue; font-weight:500" onClick="window.open('+localStorage.comma+''+localStorage.files+'/'+data[i].url+''+localStorage.comma+','+localStorage.comma+'_system'+localStorage.comma+')">'+data[i].name+'</a></td></tr>');
+																}
+																$.mobile.loading("hide");
+														},
+													error: function(data){
+														console.log(data);
+														navigator.notification.alert(
+																  'There was an error with active loads 9',
+																  alertCallback,
+																  'Smith TracknGo',
+																  'Ok');
+																 $.mobile.loading("hide");
+													}})		
+											
+											//---GETTING ADDRESS --- //
+											 $.ajax({
+												   type: 'POST',
+												   dataType: 'json',
+												   async:false,
+												   url: 'https://maps.googleapis.com/maps/api/geocode/json?latlng='+pickup_lat+','+pickup_lng+'&key=AIzaSyAp8XadZn74QX4NLDphnzehQ0AN7q6NCwg',
+												   success: function(data){
+													     //alert('formatted pickup');
+														 localStorage.pickup_formatted_address = ''+data.results[0].formatted_address+'';
+													   }
+												 })
+											$.ajax({
+												   type: 'POST',
+												   dataType: 'json',
+												   async:false,
+												   url: 'https://maps.googleapis.com/maps/api/geocode/json?latlng='+drop_lat+','+drop_lng+'&key=AIzaSyAp8XadZn74QX4NLDphnzehQ0AN7q6NCwg',
+												   success: function(data){
+													   //alert('formatted drop');
+														localStorage.drop_formatted_address = ''+data.results[0].formatted_address+'';
+													   }
+												 })
+											localStorage.pick_address = 'maps://?q='+''+localStorage.pickup_formatted_address+'';
+											//pickup_add_2,drop_add_2
+											var pickup_add_1_1 = (localStorage.pickup_formatted_address).substring(0,(localStorage.pickup_formatted_address).indexOf(","));
+											var pickup_add_1_2 = (localStorage.pickup_formatted_address).substring((localStorage.pickup_formatted_address).indexOf(","));
+											$('#pickup_text').html(pickup_add_1_1+' - '+pickup_add_2+pickup_add_1_2);
+											localStorage.drop_address = 'maps://?q='+''+localStorage.drop_formatted_address+'';
+											var drop_add_1_1 = (localStorage.drop_formatted_address).substring(0,(localStorage.drop_formatted_address).indexOf(","));
+											var drop_add_1_2 = (localStorage.drop_formatted_address).substring((localStorage.drop_formatted_address).indexOf(","));
+											$('#drop_text').html(drop_add_1_1+' - '+drop_add_2+drop_add_1_2);
+											$("#bol_number_hid").html(data[k].bol_number);
+											if (data[k].origin_sign != 0){
+												      $('#shipper_take_picture').html('<img width="100%" src="css/picked_up.png" />');
+													   $('#shipper_take_picture').attr('onClick','');
+													  $('#consignee_take_picture').html('<img width="100%" src="css/for_delivery_active.png" />');
+													  $('#consignee_take_picture').attr('onClick','consignee_take_pic()');
+												}else{
+													   $('#shipper_take_picture').html('<img width="100%" src="css/for_pickup.png" />');
+													  $('#shipper_take_picture').attr('onClick','shipper_take_pic()');
+													  $('#consignee_take_picture').html('<img width="100%" src="css/for_delivery.png" />');
+													  $('#consignee_take_picture').attr('onClick','');
+													}
+													setTimeout(function(){
+															if(data[k].destination_sign != 0){
+																 $('#consignee_take_picture').html('<img width="100%" src="css/delivered.png" />');
+																  $('#consignee_take_picture').attr('onClick','');
+																	}
+															if(data[k].origin_sign != 0 && data[i].destination_sign != 1){
+																  $('#consignee_take_picture').html('<img width="100%" src="css/for_delivery_active.png" />');
+																  $('#consignee_take_picture').attr('onClick','consignee_take_pic()');
+																}
+													},0);
+									}
+								}
+
+                            },
+                            error: function(data){
+                                console.log(data);
+								navigator.notification.alert(
+								  'There was an error loading the details 1',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+                            }})
+				initMap1(latitude_driver,longitude_driver,parseFloat(localStorage.pickup_lat_val),parseFloat(localStorage.pickup_lng_val),parseFloat(localStorage.drop_lat_val),parseFloat(localStorage.drop_lng_val));
+                      //return false;
+					   //return false;
+					  if(localStorage.bol_redirect == 1){
+						  }else{
+					      location.href = "#page2_5";
+					  };
+					  localStorage.bol_redirect = 0;
+                };
+						  
+//----------------------END OF   Map, Distance , Time ------------------------------
+	/* SIGNATURE DETAILS
+	*/
+	function close_sig(){
+		$("#signatureparent").html("");
+		screen.lockOrientation('portrait');
+		location.href='#page2_5';
+		}
+		
+	function close_sig2(){
+		$("#signatureparent2").html("");
+		screen.lockOrientation('portrait');
+		location.href='#page2_5';
+		}
+		
+	function close_sig3(){
+		$("#signatureparent3").html("");
+		screen.lockOrientation('portrait');
+		location.href='#page2_5';
+		}
+	function close_comment(){
+		$("#comment_hand_parent").html("");
+		screen.lockOrientation('landscape');
+		location.href='#page5';
+		}
+	
+	(function($){
+		$('#backmessage').click(function(){
+		     clearInterval(chatInt);
+			 //alert('reset chat');
+			location.href ="#page2_5";
+			});
+			
+		$('#page4').on('pageshow',function(e,data){
+			// Show callcheck in left panel.
+			//$('#callcheck_li').show();
+			//var chatInt;
+			localStorage.message = 1;
+			$('#troubles_-button').css('font-size','13px');
+			$('#troubles_-button').attr('class','ui-btn ui-icon-carat-d ui-corner-all ui-shadow');
+			$('#troubles_-button').css('padding','10px');
+			$('#troubles_-button').css('color', '#626262');
+			$('#troubles_msg').attr('class','');
+		    
+			$('#message_body').css('height',(0.65*parseFloat(window.screen.height)));
+		    $('#notification_message').css('height',(0.37*parseFloat(window.screen.height)));
+			/*setTimeout(function () {
+									myScroll_message.refresh();
+										}, 500);*/
+			//localStorage.msg = 0;
+			//localStorage.bol = 0;
+			$('#message_button').show();
+			$('#loading_message').hide();
+			$('#header_message').html('JOB #: '+'<a id="bol4" href="#" x-apple-data-detectors="false">'+localStorage.load_number+'</a>');
+		
+		$('#clear_message').click(function(){
+			$('#troubles_msg').val('')
+			});
+		
+		
+		cordova.plugins.backgroundMode.enable();
+		//$('#msg_hid').hide();
+		// ----- START CHAT when showing page ------//
+					start_chat();		
+		// ----- END OF ---- START CHAT when showing page ------//	
+						
+	chatInt = setInterval(function(){
+						$.ajax({
+							type: 'POST',
+							dataType: 'json',
+							async:false,
+							url: ''+localStorage.base_url+'/load/get_chat/'+localStorage.load_id_bol+'/1',
+								success: function(data){
+								$("#notification_message").html("");
+								console.log(data);
+								for(i=0;i<data.length;i++){
+								if ((data[i].driver_sw == '0')&&(data[i].notify_driver =='1')){
+									$("#notification_message").append('<div><p align="left" class="pmanager">'+data[i].user_login+' : '+data[i].comment+'</p></div>');
+								} else if ((data[i].driver_sw == '1')) {
+									$("#notification_message").append('<div><p align="right" class="pdriver">'+data[i].driver_name+' : '+data[i].comment+'</p></div>');
+								}
+								}
+								//$('#notification_message').scrollTop($('#notification_message')[0].scrollHeight);
+							},
+							error: function(data){
+								console.log(data);
+							}});
+					
+							//$('#notification_message').scrollTop($('#notification_message')[0].scrollHeight);
+							/*setTimeout(function () {
+											myScroll_message.refresh();
+										}, 500);*/
+						}, 10000);
+						
+
+			
+					});
+	
+	// ------ SAVING SHIPPER SIGNATURE ------//
+	$('#save_signature').click(function(){
+		    $('#loading_signature').show();
+			$('#signature_button').hide();
+            var sigData = $('#signature').jSignature('getData','base30');
+            $('#hidden_Signature').val(sigData);
+			var simage = new Image();
+			simage.src = $('#signature').jSignature('getData');
+			$("#signature_print").html(simage.src);
+			$.ajax({
+					type: 'POST',
+					data: {bol_number:localStorage.bol_number, load_id:localStorage.load_id_bol, sig_print:$("#signature_print").html(), pages_number:localStorage.pages},
+					url: ''+localStorage.save_url+'/save_sig.php',
+					success: function(data){
+						console.log(data);
+						$('#save_bol').hide();
+						$('#sig_button1').attr("href","#");
+						$('#sig_button1').html('<img src="css/button2s.png" width="100%"/>');
+						$('#consignee_button').html('<a href="#page5" id="sig_button2" name="b" class=""><img id="img_gps" src="css/button3.png" width="100%"/></a>');
+						message_signature(localStorage.load_id_bol,1,localStorage.bol_number);
+						//sigData.jSignature("reset");
+						  var d = new Date();
+						  //$('#shipper_photos').append('<div><a style="color:blue; font-weight:500" href="#" onClick="view_picture_shipper('+localStorage.load_id_bol+','+localStorage.comma+localStorage.bol_number+localStorage.comma+','+localStorage.shipper_counter+')">-'+('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+(d.getDate())).slice(-2)+'/'+d.getFullYear()+'_'+localStorage.shipper_counter+'</a></div>');
+						  //$('#expand_shipper').html('<b>&nbsp; - </b>Shipper BOL');
+						  //$('#shipper_photos').show();
+						  localStorage.shipper_counter = parseFloat(localStorage.shipper_counter) + 1;
+						  $('#eta_shipper').html("Completed");
+						  localStorage.origin_sign = 1;
+					},
+					error: function(data){
+						console.log(data);
+					}})
+			});
+			
+	// ------ SAVING PICTURE SIGNATURE ------//
+	$('#save_signature3').click(function(){
+		    $('#loading_signature3').show();
+			$('#signature_button3').hide();
+            var sigData = $('#signature3').jSignature('getData','base30');
+            $('#hidden_Signature3').val(sigData);
+			var simage3 = new Image();
+			simage3.src = $('#signature3').jSignature('getData');
+			$("#signature_print3").html(simage3.src);
+			localStorage.bol_number_pic
+			$.ajax({
+					type: 'POST',
+					data: {load_id:localStorage.load_id_pic, bol_number:localStorage.bol_number_pic, index:localStorage.shp_cs_id, pic_number:localStorage.pic_number, sig_print:$("#signature_print3").html()},
+					url: ''+localStorage.save_url+'/save_sig_pic.php',
+					success: function(data){
+						function alertCallback2(){
+						        location.href='#page2_5';
+						        screen.lockOrientation('portrait');
+						}
+						console.log(data);
+						navigator.notification.alert(
+												  'Signature Saved on Picture',
+												  alertCallback2,
+												  'Smith TracknGo',
+												  'Ok');
+						//sigData.jSignature("reset");
+					},
+					error: function(data){
+						console.log(data);
+					}})
+			});
+			
+	// ------ SAVING DELIVERY SIGNATURE ------//
+	$('#save_signature2').click(function(){
+			var unsigned_shipments = 0;
+			$('#loading_signature2').show();
+			$('#signature_button2').hide();
+            var sigData = $('#signature2').jSignature('getData','base30');
+            $('#hidden_Signature2').val(sigData);
+			var simage2 = new Image();
+			simage2.src = $('#signature2').jSignature('getData');
+			$("#signature_print2").html(simage2.src);
+			$.ajax({
+					type: 'POST',
+					async: false,
+					data: {bol_number:localStorage.bol_number,load_id:localStorage.load_id_bol,sig_print:$("#signature_print2").html(), pages_number:localStorage.pages},
+					url: ''+localStorage.save_url+'/save_sig2.php',
+					success: function(data){
+						console.log(data);
+						$('#save_bol').hide();
+						$('#sig_button2').attr("href","#");
+						$('#sig_button2').html('<img src="css/button3s.png" width="100%"/>');
+						message_signature(localStorage.load_id_bol,2,localStorage.bol_number);
+						var d = new Date()
+						// $('#consignee_photos').append('<div><a style="color:blue; font-weight:500" href="#" onClick="view_picture_consignee('+localStorage.load_id_bol+','+localStorage.comma+localStorage.bol_number+localStorage.comma+','+localStorage.consignee_counter+')">-'+('0'+(d.getMonth()+1)).slice(-2)+'/'+('0'+(d.getDate())).slice(-2)+'/'+d.getFullYear()+'_'+localStorage.consignee_counter+'</a></div>');
+						// $('#expand_consignee').html('<b>&nbsp; - </b>Consignee BOL');
+						 //$('#consignee_photos').show();
+						 localStorage.consignee_counter = parseFloat(localStorage.consignee_counter) + 1;
+						 $('#eta_consignee').html("Completed");
+						 localStorage.destination_sign = 1;
+						//----- ASK FOR DESTINATION EMPTY SIGNATURES-----//
+                          $.ajax({
+							 type: 'POST',
+							 async:false,
+							 dataType: 'json',
+							 url:''+localStorage.base_url+'/load/app_get_shipments_by_load/'+localStorage.load_id_bol,
+	                         success: function(data){
+	                                console.log(data);
+									for(i=0;i<data.length;i++){
+										if(data[i].destination_sign == 0){
+											 unsigned_shipments++;
+											}else{
+												}
+										}
+                                },
+                            error: function(data){
+                                console.log(data);
+								navigator.notification.alert(
+															  'There was an error with active loads 11',
+															  alertCallback,
+															  'Smith TracknGo',
+															  'Ok');
+                            }})						
+						// Reset location traces sending //
+						if(unsigned_shipments >= 1){
+							        $('#select_document_div').hide();
+									$('#take_photo_button').hide();
+							}else{
+								    $('#select_document_div').hide();
+									$('#take_photo_button').hide();
+									localStorage.start = 0;
+									localStorage.finish = 1;
+									// To enable the restart --- driver setinterval --- driver_location_interval
+									localStorage.location_mark = 0;
+									//-/-----/-//
+									localStorage.trace = 0;//$('#localstorage_trace').html(0);
+									clearInterval(location_trace_interval);
+									//clearInterval(driver_location_interval);
+									//alert('location_trace_deleted_2');
+									cordova.plugins.backgroundMode.disable();
+									bgGeo.stop();
+									//sigData.jSignature("reset");
+								};
+						
+					},
+					error: function(data){
+						console.log(data);
+					}})
+			});
+	
+			
+	//------------SAVING CONSIGNEE COMMENT -----//	
+	$('#save_comment').click(function(){
+			$('#loading_comment_hand').show();
+		    $('#comment_button').hide();
+            var sigData = $('#comment_hand').jSignature('getData','base30');
+            $('#hidden_comment').val(sigData);
+			var simage3 = new Image();
+			simage3.src = $('#comment_hand').jSignature('getData');
+			$("#comment_print").html(simage3.src);
+			$.ajax({
+					type: 'POST',
+					data: {comment_hand:$('#hidden_comment').val(),load_id:localStorage.load_id_bol,comment_print:$("#comment_print").html(),bol_number:localStorage.bol_number},
+					url: ''+localStorage.save_url+'/save_comment_hand.php',
+					success: function(data){
+						console.log(data);
+						
+						function alertCallback0(){
+							location.href='#page5';
+						}
+						navigator.notification.alert(
+								  'Comment added to the BOL',
+								  alertCallback0,
+								  'Smith TracknGo',
+								  'Ok');
+						//sigData.jSignature("reset");
+						$("#comment_hand_parent").html("")
+						//back button
+						$('#back4').hide();
+						//cancel button
+						$('#back4_1').hide();
+						$('#save_comment_action').html('<img width="77%" src="css/signature-comment-inactive.png">');
+						localStorage.comment = 1;
+						//sigData.jSignature("reset");
+					},
+					error: function(data){
+						console.log(data);
+					}})
+		});
+		
+	//----------Function for saving signature message to callchecks
+	function message_signature(lid,sig,bol){
+									//alert(lid+'-'+sig)
+							  // ------------Message to signature saving 
+									$.ajax({
+										type: 'POST',
+										data: {load_id:localStorage.load_id_bol, sig_id: sig, bol_number:localStorage.bol_number, user_id: localStorage.user_id, lat_sig: $('#latitude').val(), lng_sig:$('#longitude').val()},
+										url: ''+localStorage.save_url+'/message_signature.php',
+										success: function(data){
+													//$('#sig_button1').attr("href","#");
+													function alertCallback1(){
+															if(sig == 2){
+																   clearInterval(driver_location_interval);
+																   //alert('driver location cleared');
+																}else{
+																	//alert('not cleared');
+																	}
+															location.href='#page2_5';
+															screen.lockOrientation('portrait');	
+														}
+														
+													navigator.notification.alert(
+														  'Signature Saved',
+														  alertCallback1,
+														  'Smith TracknGo',
+														  'Ok');
+											},
+										error: function(data){
+											},
+										})
+						// -----------End of message to signature saving
+		}
+		
+	//----------END OF Function for saving signature
+	$('#shipper_title').click(function(){
+		  
+		});
+	$('#page2_5').on('pageshow',function(e,data) {
+		//var map_interval;
+		//initMap1(11.00402390,-74.80558047,11.02184900000000000000000,-74.86286400000000000000000,10.78994000000000000000000,-74.75643900000000000000000);
+				/*theinterval = setInterval(function(){
+			   alert('map interval');
+			},6000);*/
+		localStorage.counter_photo1 = 0;
+		localStorage.counter_photo2 = 0;
+		localStorage.bol_redirect = 0;
+		$('#select_new_document-button').css('font-size','14px');
+		$('#select_new_document-button').attr('class','ui-btn ui-icon-carat-d ui-corner-all ui-shadow');
+		$('#select_new_document-button').css('padding','5px');
+		$('#select_new_document-button').css('width','100%');
+		//$('#middle_number').html('1');
+		$('#doc_options').css('display','none');
+		$('#digital_bol').attr('src','css/digital_active.png');
+		$('#direction_bol').attr('src','css/places_inactive.png');
+		$('#picture_bol').attr('src','css/picture_inactive.png');
+		//$('#chat_bol').attr('src','css/chat_inactive.png');
+		//$('#picture_buttons').hide();
+		//$('#pick_drop').hide();
+		$('#bol_image').hide();
+		//HIDE picture buttons
+		// HIDE directions
+		$('#pick_drop').show();
+		// Starts save pic button hidden //
+		// Avoid allowing signatures on messages
+		view_bol();
+				
+		//load_details_unchange($('#load_hid').html(), localStorage.load_id_bol);
+		$('#back4').show();
+		map_interval = setInterval(function(){
+						var latitude_driver = parseFloat($('#latitude').val());
+                        var longitude_driver = parseFloat($('#longitude').val());
+						//alert('refreshing map');
+						initMap1(latitude_driver,longitude_driver,parseFloat(localStorage.pickup_lat_val),parseFloat(localStorage.pickup_lng_val),parseFloat(localStorage.drop_lat_val),parseFloat(localStorage.drop_lng_val));
+					  }, 60000);
+	});
+	
+	$('#page2_5').on("pagehide",function(){
+			clearInterval(map_interval);
+			map_interval = null;
+		}); 
+	
+	$('#page3').on('pageshow',function(e,data) {
+		$('#loading_signature').hide();
+		$('#signature_button').show();
+		$('#header_signature_1').html('BOL #: '+'<a id="bol2" href="#" x-apple-data-detectors="false">'+localStorage.bol_number+'</a>');
+		screen.lockOrientation('landscape');
+		setTimeout(function(){
+				$("#signatureparent").html('<div id="signature"></div>');
+				//$("#signature").html("");
+				var $sigdiv1 = $("#signature").jSignature({'UndoButton':false});
+				//d = new Date();
+					$('#clear_sig1').click(function(){
+						$sigdiv1.jSignature('reset');
+					});
+				$('#page3_tr').css('background-image','url('+localStorage.files+'/'+localStorage.load_id_bol+'_bol_'+localStorage.bol_number+'-0.jpg)');			
+			},1000);
+	
+		setTimeout(function(){
+		    $("#page3").css("min-height","0px");	
+		},500);
+	});
+	
+	$('#page7').on('pageshow',function(e,data) {
+		$('#loading_signature3').hide();
+		$('#signature_button3').show();
+		$('#header_signature_3').html('BOL #: '+'<a id="bol3" href="#" x-apple-data-detectors="false">'+localStorage.bol_number+'</a>');
+		screen.lockOrientation('landscape');
+		setTimeout(function(){
+				$("#signatureparent3").html('<div id="signature3"></div>');
+				//$("#signature").html("");
+				var $sigdiv3 = $("#signature3").jSignature({'UndoButton':false});
+				//d = new Date();
+					$('#clear_sig3').click(function(){
+						$sigdiv3.jSignature('reset');
+					});
+				$('#page3_tr3').css('background-image','url('+localStorage.files+'/'+localStorage.load_id_bol+'_bol_'+localStorage.bol_number+'_'+localStorage.shp_cs_id+'-'+localStorage.pic_number+'.jpg)');			
+			},1000);
+	
+		setTimeout(function(){
+		    $("#page7").css("min-height","0px");	
+		},500);
+	})
+	
+	$('#page5').on('pageshow',function(e,data) {
+		$('#comment_bol-button').css('font-size','13px');
+		$('#comment_bol-button').attr('class','ui-btn ui-icon-carat-d ui-corner-all ui-shadow');
+		$('#comment_bol-button').css('padding','3px');
+		$('#loading_signature2').hide();
+		$('#signature_button2').show();
+		$('#header_signature_2').html('BOL #: '+'<a id="bol3" href="#" x-apple-data-detectors="false">'+localStorage.bol_number+'</a>');
+		screen.lockOrientation('landscape');
+		setTimeout(function(){
+				$("#signatureparent2").html('<div id="signature2"></div>');
+				//$("#signature2").html("");
+				var $sigdiv2 = $("#signature2").jSignature({'UndoButton':false});
+				$('#clear_sig2').click(function(){
+					$("#signature2").jSignature('reset')
+				});	
+				//d = new Date();
+				$('#page5_tr').css('background-image','url('+localStorage.files+'/'+localStorage.load_id_bol+'_bol_'+localStorage.bol_number+'-0.jpg)');
+			},1000);
+			
+		
+		setTimeout(function(){
+		$("#page5").css("min-height","0px");	
+		},500);
+
+
+	})
+	
+	$('#page6').on('pageshow',function(e,data) {
+		//Change select style
+		$('#comment_bol2-button').css('font-size','13px');
+		$('#comment_bol2-button').attr('class','ui-btn ui-icon-carat-d ui-corner-all ui-shadow');
+		$('#comment_bol2-button').css('padding','3px');
+		//Disable click on select OK SHORTAGE/DAMAGE
+		$("#disable_select *").attr("disabled", "disabled").off('click');
+		//-------
+		$('#loading_comment_hand').hide();
+		$('#comment_button').show();
+		$('#header_comment').html('BOL #: '+'<a id="bol4" href="#" x-apple-data-detectors="false">'+$("#bol_number_hid").html()+'</a>');
+		screen.lockOrientation('landscape');
+		setTimeout(function(){
+			$("#comment_hand_parent").html('<div id="comment_hand"></div>');
+			//$("#comment_hand").html("");
+			//var $sigdiv = $("#comment_hand").jSignature({'height':(0.5*parseFloat(window.screen.height)),'width':'100%','UndoButton':true});
+			var $sigdiv3 = $("#comment_hand").jSignature({'UndoButton':false});
+				$('#clear_comment').click(function(){
+					$("#comment_hand").jSignature('reset')
+				})
+		},1000);
+		setTimeout(function(){
+			$("#page6").css("min-height","0px");	
+		},500);
+		
+		
+	})
+	
+	$('#page1_1').on('pageshow',function(e,data) {
+		$('#lol').css('height',(0.68*parseFloat(window.screen.height)));
+		active_load(localStorage.user_id);
+		cordova.plugins.backgroundMode.enable();
+		$('#back_change').attr('href','#page2');
+	    });
+		
+$('#page2').on('pageshow',function(e,data){
+	//$.mobile.loading("show", {text: 'loading',textVisible: true,theme: 'b',html: '<img src="css/loading.gif" style="width:40%;margin-left: 30%;" />'});
+//-----------------------------------------	
+				if(localStorage.inactive == 1){
+					}else{
+						if(localStorage.load_hid == localStorage.load_hid_2){
+							}else{
+						   // alert('trace_load activated')
+						    if(localStorage.double_trace_mark == 1){}else{
+								 trace_load();
+								 //alert('I got inside trace 3');
+							};
+						}
+					}
+		if(localStorage.inactive == 1){}else{
+//------------
+        unchanged_shipments_load(localStorage.load_id_bol,localStorage.load_number);
+//------------
+		if ((localStorage.start == 1)){
+				}else{
+			setTimeout(function(){
+				//--- Start location intervals Just Once ---- Mark ----//
+					  localStorage.start = 1;
+					},100);
+				}
+		localStorage.load_hid = localStorage.load_hid_2;
+//-----------------------------------------	
+		}
+		localStorage.double_trace_mark = 0;
+		});
+		
+		//$("select option:contains('Value a')").attr("disabled","disabled")
+		
+	})(jQuery)
+</script>
+    <script src="https://maps.googleapis.com/maps/api/js"></script>
+  </body>
+</html>
+<!--?signed_in=true&callback=initMap1" async defer-->
