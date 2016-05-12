@@ -145,8 +145,37 @@
 						if(page == 'page1_1'){
 							active_load2(localStorage.user_id);
 						};
+					if(localStorage.user_id){
+						check_request();
+					}
 			 }, 0);
 		};
+		//-------function to check LOCATION REQUEST----//
+	function check_request(){
+		//alert('in check_request');
+			$.ajax({
+				type:'POST',
+				dataType:'json',
+				async:true,
+				url:localStorage.base_url+'/load/app_get_requests_by_id/'+localStorage.load_id_bol,
+				success: function(data){
+					//alert(localStorage.base_url+'/load/app_get_requests_by_id/'+localStorage.load_id_bol);
+					if(data[0].request_number > 0){
+						  //alert(data[0].request_number);
+						  location_request();
+						}else{
+							};
+					},
+				error: function(data){
+								navigator.notification.alert(
+								  'Connection Error',
+								  alertCallback,
+								  'Smith TracknGo',
+								  'Ok');
+					},
+				});
+		}
+	//-------
     // onSuccess Geolocation
     //
     function onSuccess(position) {
@@ -435,20 +464,18 @@
 																	//alert(data[i].idts_load+'-'+data[i].load_number);
 															};
 														};
-														
 														setTimeout(function(){
 															active_shipments_load(localStorage.load_id_bol,localStorage.last_active_load_number);
 															location_request();
 														},0);
-														
 														function NewRequestCallback(){
 															 //active_shipments_load(localStorage.load_id_bol,localStorage.last_active_load_number);
 															};
-																navigator.notification.alert(
+																/*navigator.notification.alert(
 																	  'Location Shared',
 																	  NewRequestCallback,
 																	  'Smith TracknGo',
-																	  'Ok');
+																	  'Ok');*/
 															 
 												},
 											 error: function(data){},
